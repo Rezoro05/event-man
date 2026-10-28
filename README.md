@@ -50,7 +50,7 @@ The headline revenue is rounded to whole dollars. The building tooltip displays 
 
 ### Building health bars
 
-- Show the building name and a small segmented game-style health bar, without a large descriptive card covering the shop.
+- Show the building name and a small segmented game-style health bar above its roof, without a large descriptive card covering the shop.
 - Keep stock numbers hidden on the map by default.
 - Hover or keyboard-focus a building to reveal stock available, units sold, and sales dollars.
 - If sales dollars are calculated from menu prices, the tooltip labels them **Est. sales**.

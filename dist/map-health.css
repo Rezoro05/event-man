@@ -1,4 +1,7 @@
 /* Game HUD: building name + segmented health only. Numbers stay in the tooltip. */
+.shop.av,.shop.c1{top:5.5%}
+.shop.a1,.shop.c2{top:67%}
+.shop.bs{top:30.5%}
 .shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;padding:4px 2px;box-shadow:none;text-align:center;overflow:visible}
 .shop.warehouse{background:transparent;border:0}
 .shop:hover,.shop.active{transform:translate(-50%,-50%);box-shadow:none;border:0}
@@ -27,5 +30,6 @@
 .touch-instruction{display:none}
 @media(max-width:600px){.shop{width:88px;min-height:44px;padding:4px 2px}.shop-name{font-size:10px;margin-bottom:4px;letter-spacing:-.2px}.health-track{height:10px}.shop-tooltip{width:170px;padding:10px}.tooltip-row{font-size:11px}.tooltip-row strong{font-size:12px}.health-alert{width:13px;height:13px;font-size:9px;line-height:11px}}
 @media(hover:none){.tooltip-instruction{font-size:0}.touch-instruction{display:block;font-size:10px}}
+/* Leave enough room for the top-row names on short phone maps. */
+@media(max-width:600px){.shop.av,.shop.c1{top:8%}}
 @media(prefers-reduced-motion:reduce){.health-fill,.shop-tooltip{transition:none}}
-
