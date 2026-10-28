@@ -1,10 +1,16 @@
 /* Game HUD: building name + segmented health only. Numbers stay in the tooltip. */
-.shop.av,.shop.c1{top:5.5%}
-.shop.a1,.shop.c2{top:67%}
-.shop.bs{top:30.5%}
-.shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;padding:4px 2px;box-shadow:none;text-align:center;overflow:visible}
+/* Roof edges measured on the 1672 × 941 map. Anchor the bar's bottom,
+   not the label's center, so label height and viewport size cannot change the gap. */
+.venue{--roof-gap:8px;overflow:visible}
+.venue>img{display:block;border-radius:inherit}
+.shop.av{--roof-y:9.03%}
+.shop.c1{--roof-y:8.93%}
+.shop.a1,.shop.c2{--roof-y:71.41%}
+.shop.bs{--roof-y:35.07%}
+.venue .shop{top:calc(var(--roof-y) - var(--roof-gap));transform:translate(-50%,-100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 2px}
+.shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center;overflow:visible}
 .shop.warehouse{background:transparent;border:0}
-.shop:hover,.shop.active{transform:translate(-50%,-50%);box-shadow:none;border:0}
+.shop:hover,.shop.active{box-shadow:none;border:0}
 .shop-name{display:block;color:#fff7e8;font:800 13px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.35px;text-shadow:-1px -1px 0 #172033,1px -1px 0 #172033,-1px 1px 0 #172033,1px 1px 0 #172033,0 2px 3px #000;white-space:nowrap;margin-bottom:5px}
 .health-track{position:relative;display:block;height:13px;border:2px solid #202a31;background:#262c32;box-shadow:0 0 0 1px #fef3c7,0 3px 0 #19242a88;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px)}
 .health-track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 2px),#17203399 calc(10% - 2px),#17203399 10%);pointer-events:none}
@@ -30,6 +36,4 @@
 .touch-instruction{display:none}
 @media(max-width:600px){.shop{width:88px;min-height:44px;padding:4px 2px}.shop-name{font-size:10px;margin-bottom:4px;letter-spacing:-.2px}.health-track{height:10px}.shop-tooltip{width:170px;padding:10px}.tooltip-row{font-size:11px}.tooltip-row strong{font-size:12px}.health-alert{width:13px;height:13px;font-size:9px;line-height:11px}}
 @media(hover:none){.tooltip-instruction{font-size:0}.touch-instruction{display:block;font-size:10px}}
-/* Leave enough room for the top-row names on short phone maps. */
-@media(max-width:600px){.shop.av,.shop.c1{top:8%}}
 @media(prefers-reduced-motion:reduce){.health-fill,.shop-tooltip{transition:none}}
