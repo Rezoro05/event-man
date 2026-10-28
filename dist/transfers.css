@@ -1,0 +1,53 @@
+
+.kpis{grid-template-columns:repeat(7,minmax(0,1fr))}
+.kpi strong{font-variant-numeric:tabular-nums}
+.shop{z-index:3;cursor:pointer}
+.venue>img{position:relative;z-index:0}
+.venue{width:100%;min-width:0}
+.venue:after{z-index:2;pointer-events:none}
+.route-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.route-layer path{fill:none;stroke:#fff7d6;stroke-width:.65;stroke-dasharray:1.5 1;filter:drop-shadow(0 1px 1px #5b350f)}
+.runner{position:absolute;left:var(--sx);top:var(--sy);transform:translate(-50%,-50%);width:46px;height:50px;border:0;background:transparent;cursor:pointer;overflow:visible;padding:0;animation:carry-products 12s linear forwards}
+.runner-person{width:42px;height:50px;filter:drop-shadow(0 2px 1px #fff)}
+.runner-legs{animation:walk-steps .32s steps(2,end) infinite;transform-origin:16px 24px}
+.runner.awaiting .runner-legs{animation:none}
+.runner-label{position:absolute;top:47px;left:50%;transform:translateX(-50%);background:#172033;color:#fff;padding:4px 7px;border:1px solid #fff;border-radius:6px;white-space:nowrap;font:700 10px system-ui,sans-serif;box-shadow:0 2px 4px #0003}
+@keyframes carry-products{0%{left:var(--sx);top:var(--sy)}50%{left:50%;top:61%}100%{left:var(--ex);top:var(--ey)}}
+@keyframes walk-steps{0%{transform:skewX(-8deg)}100%{transform:skewX(8deg)}}
+.transfer-panel{margin-top:16px}
+.transfer-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.transfer-heading .mini{margin:0}
+.transfer-ticket{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid #f5ce9c;background:#fffbf5;border-radius:12px;padding:15px;margin-top:12px}
+.transfer-ticket h3{margin:6px 0 4px;font-size:16px}
+.transfer-ticket p{margin:0 0 4px}
+.transfer-ticket small{color:var(--mute)}
+.transit-badge{display:inline-block;color:#9a3412;background:#ffedd5;padding:3px 7px;border-radius:6px;font-size:11px;font-weight:800}
+.receive-button{width:auto;max-width:260px;min-height:44px;padding:10px 14px;flex-shrink:0;cursor:pointer}
+.empty-transfers{padding:14px;background:#f8fafc;border-radius:10px;color:var(--mute)}
+#delivery-history{margin-top:16px;color:#475569}
+#delivery-history summary{cursor:pointer;font-weight:700;padding:10px 0}
+.history-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.history-row small{color:var(--mute)}
+#transferform .fields{margin-top:18px}
+.dispatch-submit{display:flex;align-items:flex-end}
+.availability{color:#166534;font-weight:700;margin:12px 0 0}
+.transfer-error{color:#b91c1c;font-weight:700;font-size:14px}
+.transfer-error:empty{display:none}
+.storage-note{font-size:12px;color:var(--mute);margin:12px 0 0}
+input[aria-invalid="true"]{border:2px solid #dc2626}
+button:disabled{opacity:.55;cursor:not-allowed}
+button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:100;width:min(560px,calc(100vw - 24px));background:#172033;color:white;padding:16px 18px;border-radius:13px;box-shadow:0 12px 35px #17203355;display:flex;gap:12px;align-items:center}
+.toast[hidden]{display:none}
+#toast-message{flex:1}
+#dismiss-toast{background:none;border:0;color:#fff;min-width:44px;min-height:44px;font-size:26px;cursor:pointer}
+dialog{width:min(480px,calc(100vw - 24px));border:1px solid var(--line);border-radius:18px;padding:25px;color:var(--ink);box-shadow:var(--shadow)}
+dialog::backdrop{background:#172033aa}
+.delivery-quantity{font-size:32px;font-weight:800;color:var(--orange);margin-top:18px}
+.receipt-check{display:flex;align-items:center;gap:12px;font:600 14px/1.4 system-ui,sans-serif;color:var(--ink);text-transform:none;margin:20px 0}
+.receipt-check input{width:22px;height:22px;min-height:22px;flex:0 0 22px}
+.dialog-actions{display:flex;gap:12px}
+.dialog-actions button{flex:1;margin:0;min-height:44px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:600px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.transfer-ticket{align-items:stretch;flex-direction:column}.receive-button{max-width:none;width:100%}.transfer-heading{align-items:flex-start;flex-direction:column}.history-row{flex-direction:column}.runner-label{font-size:9px}.toast{bottom:12px}.runner{width:44px;height:44px}.runner-person{height:44px}}
+@media(prefers-reduced-motion:reduce){.runner{animation:none;left:var(--ex);top:var(--ey)}.runner-legs{animation:none}}
