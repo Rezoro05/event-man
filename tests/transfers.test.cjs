@@ -1,4 +1,22 @@
 const test=require('node:test');
+
+test('five movers are selectable and the transfer form opens for the selected person',()=>{
+ const b=browser();
+ assert.equal((b.el('#venue').innerHTML.match(/data-mover=/g)||[]).length,5);
+ b.run("openTransfer('mover-3')");
+ assert.equal(b.el('#transfer-dialog').open,true);
+ assert.match(b.el('#dispatch-mover').textContent,/Mover 3/);
+ assert.equal(b.run('activeMover'),'mover-3');
+});
+test('one delivery per mover; confirmed receipt releases the mover for a new job',()=>{
+ const d=empty();
+ assert.equal(Ledger.initiate(menu,d,request(5)).ok,true);
+ const busy=Ledger.initiate(menu,d,request(5,{id:'t2'}));
+ assert.equal(busy.ok,false);assert.match(busy.error,/already delivering/);
+ assert.equal(Ledger.initiate(menu,d,request(5,{id:'t3',moverId:'mover-2'})).ok,true);
+ assert.equal(Ledger.confirmDelivery(d,'t1',3000).ok,true);
+ assert.equal(Ledger.initiate(menu,d,request(5,{id:'t4'})).ok,true);
+});
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
@@ -6,7 +24,7 @@ const path=require('node:path');
 const Ledger=require('../dist/transfer-ledger.js');
 const menu=[['Pretzel',8.5,[10,10,10,10,35]],['VIP Flight',0,[0,45,0,0,0]]];
 const empty=()=>({sales:[],transfers:[]});
-const request=(qty,extra={})=>({id:'t1',item:'Pretzel',from:'Backstock',to:'Cherry 1',qty,at:1000,...extra});
+const request=(qty,extra={})=>({id:'t1',item:'Pretzel',from:'Backstock',to:'Cherry 1',qty,at:1000,moverId:'mover-1',...extra});
 test('overstock, fractional, zero and negative transfers never change stock',()=>{
  for(const qty of [36,0,-1,0.5,NaN,Infinity]) {
   const d=empty();const result=Ledger.initiate(menu,d,request(qty));
@@ -56,6 +74,7 @@ function browser(){
 }
 test('actual form blocks excess, shows success, renders runner, waits for confirmation and preserves reload state',async()=>{
  const b=browser();
+ b.run("openTransfer('mover-1')");
  b.el('#titem').value='Warm Salted Pretzel VGO';b.el('#from').value='Backstock';b.el('#to').value='Cherry 1';b.el('#tqty').value='36';
  await b.run('dispatchTransfer({preventDefault(){}})');
  assert.match(b.el('#transfer-error').textContent,/Only 35 units/);
@@ -82,10 +101,10 @@ test('actual form blocks excess, shows success, renders runner, waits for confir
 });
 test('form revalidates the latest persisted stock before dispatch',async()=>{
  const b=browser();
+ b.run("openTransfer('mover-1')");
  b.el('#titem').value='Warm Salted Pretzel VGO';b.el('#from').value='Backstock';b.el('#to').value='Cherry 1';b.el('#tqty').value='10';
  b.memory.set('rezis-inventory-v1',JSON.stringify({sales:[],transfers:[{id:'other-tab',item:'Warm Salted Pretzel VGO',from:'Backstock',to:'Cherry 2',qty:30,at:Date.now(),status:'in_transit'}]}));
  await b.run('dispatchTransfer({preventDefault(){}})');
  assert.match(b.el('#transfer-error').textContent,/Only 5 units/);
  assert.equal(b.run('D.transfers.length'),1);
 });
-

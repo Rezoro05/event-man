@@ -1,5 +1,6 @@
 (function (root) {
   'use strict';
+  const moverIds = ['mover-1','mover-2','mover-3','mover-4','mover-5'];
   function delivered(t) { return t.status === undefined || t.status === 'delivered'; }
   function pending(t) { return t.status === 'in_transit'; }
   function stock(menu, state, item, location) {
@@ -16,7 +17,9 @@
   }
   function initiate(menu, state, request) {
     const locations = ['Atrium 1','Atrium VIP','Cherry 1','Cherry 2','Backstock'];
-    const {item, from, to, qty, id, at} = request;
+    const {item, from, to, qty, id, at, moverId} = request;
+    if (!moverIds.includes(moverId)) return {ok:false,error:'Select an available mover on the map first.'};
+    if (state.transfers.some(t => pending(t) && t.moverId === moverId)) return {ok:false,error:'This mover is already delivering another transfer. Choose an available mover.'};
     if (!menu.some(x => x[0] === item)) return {ok:false,error:'Choose a valid menu item.'};
     if (!locations.includes(from) || !locations.includes(to)) return {ok:false,error:'Choose both locations.'};
     if (from === to) return {ok:false,error:'Choose a destination different from the source.'};
@@ -25,7 +28,7 @@
     if (!id || state.transfers.some(t => t.id === id)) return {ok:false,error:'This transfer has already been initiated.'};
     const available = stock(menu,state,item,from);
     if (qty > available) return {ok:false,error:'Only '+Math.max(0,available)+' units of '+item+' are available at '+from+'. Enter a quantity within available stock.'};
-    const transfer = {id,item,from,to,qty,at,status:'in_transit'};
+    const transfer = {id,item,from,to,qty,at,moverId,status:'in_transit'};
     state.transfers.push(transfer);
     return {ok:true,transfer};
   }
@@ -36,8 +39,7 @@
     transfer.deliveredAt = at;
     return {ok:true,transfer};
   }
-  const api = {stock, initiate, confirmDelivery, pending, delivered};
+  const api = {stock, initiate, confirmDelivery, pending, delivered, moverIds};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TransferLedger = api;
 })(globalThis);
-

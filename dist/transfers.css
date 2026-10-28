@@ -12,6 +12,8 @@
 .runner-legs{animation:walk-steps .32s steps(2,end) infinite;transform-origin:16px 24px}
 .runner.awaiting .runner-legs{animation:none}
 .runner-label{position:absolute;top:47px;left:50%;transform:translateX(-50%);background:#172033;color:#fff;padding:4px 7px;border:1px solid #fff;border-radius:6px;white-space:nowrap;font:700 10px system-ui,sans-serif;box-shadow:0 2px 4px #0003}
+.runner[data-destination-side="right"] .runner-label{transform:translateX(-90%)}
+.runner[data-destination-side="left"] .runner-label{transform:translateX(-10%)}
 @keyframes carry-products{0%{left:var(--sx);top:var(--sy)}50%{left:50%;top:61%}100%{left:var(--ex);top:var(--ey)}}
 @keyframes walk-steps{0%{transform:skewX(-8deg)}100%{transform:skewX(8deg)}}
 .transfer-panel{margin-top:16px}
@@ -51,3 +53,23 @@ dialog::backdrop{background:#172033aa}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:600px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.transfer-ticket{align-items:stretch;flex-direction:column}.receive-button{max-width:none;width:100%}.transfer-heading{align-items:flex-start;flex-direction:column}.history-row{flex-direction:column}.runner-label{font-size:9px}.toast{bottom:12px}.runner{width:44px;height:44px}.runner-person{height:44px}}
 @media(prefers-reduced-motion:reduce){.runner{animation:none;left:var(--ex);top:var(--ey)}.runner-legs{animation:none}}
+.mover{position:absolute;width:46px;height:48px;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;z-index:6;cursor:pointer;overflow:visible}
+.mover .runner-person{width:46px;height:48px;filter:drop-shadow(0 2px 2px #fff)}
+.mover.idle .runner-legs{animation:none}
+.mover.idle:hover .runner-person{filter:drop-shadow(0 0 4px #fff)}
+.mover-number{position:absolute;top:-4px;left:-3px;min-width:20px;height:20px;border-radius:50%;background:var(--mover-color);border:2px solid #fff;color:#fff;font:800 11px/16px system-ui,sans-serif;box-shadow:0 1px 4px #0005}
+.mover-menu{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(260px,90%);background:#fff;border:2px solid #fed7aa;border-radius:15px;box-shadow:0 15px 45px #17203355;z-index:30;padding:14px;text-align:center}
+.mover-menu[hidden]{display:none}
+.mover-menu h3{margin:0;font-size:18px}
+.mover-menu p{margin:5px 0 12px;font-size:12px;color:var(--mute)}
+.mover-menu-avatar{height:46px}
+.mover-menu-avatar svg{height:44px}
+.mover-menu-avatar .runner-legs{animation:none}
+.menu-close,.modal-close{position:absolute;right:5px;top:5px;width:40px;height:40px;border:0;border-radius:8px;background:transparent;font-size:25px;color:#475569;cursor:pointer}
+.team-label{position:absolute;right:10px;bottom:9px;color:#fff;background:#172033df;padding:6px 8px;border-radius:8px;z-index:4;font:700 10px system-ui,sans-serif}
+.venue:after{display:none}
+#transfer-dialog{width:min(540px,calc(100vw - 24px));max-height:90vh;overflow:auto}
+#transfer-dialog .form{border:0;box-shadow:none;padding:0}
+#transfer-dialog h2{padding-right:35px}
+.assigned-mover{margin:8px 0 10px;color:#9a3412;background:#fff7ed;border-radius:8px;padding:9px 10px;font-weight:700}
+@media(max-width:600px){.mover,.mover .runner-person{width:40px;height:44px}.mover-number{left:0}.mover-menu{padding:12px}.mover-menu-avatar{height:28px}.mover-menu-avatar svg{height:28px}.mover-menu h3{font-size:16px}.mover-menu p{margin:4px 0 8px}.team-label{font-size:9px;bottom:6px;right:6px}}

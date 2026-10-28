@@ -9,7 +9,40 @@ function readState() {
 }
 const positions = {'Atrium 1':[18.4,88],'Atrium VIP':[18.4,30],'Cherry 1':[80.8,30],'Cherry 2':[80.8,88],Backstock:[50,61]};
 const walkDuration = 12000;
-let toastTimer, deliveryId = null, transferBusy = false;
+let toastTimer, deliveryId = null, transferBusy = false, activeMover = null;
+const movers=TransferLedger.moverIds.map((id,index)=>({id,name:'Mover '+(index+1),number:index+1,color:['#f97316','#2563eb','#9333ea','#0f766e','#e11d48'][index],home:[[26,56],[38,64],[50,72],[62,64],[74,56]][index]}));
+const moverName=id=>movers.find(m=>m.id===id)?.name||'Runner';
+function trolleySprite(color) {
+  return '<svg viewBox="0 0 42 40" aria-hidden="true" class="runner-person" shape-rendering="crispEdges"><ellipse cx="22" cy="38" rx="19" ry="2" fill="#17203333"/><g class="runner-legs"><path d="M7 24h5v10H5v-4h2z" fill="#172033"/><path d="M13 24h5v10h2v3h-7z" fill="#334155"/></g><path d="M6 12h12v14H6z" fill="'+color+'"/><path d="M8 4h9v9H8z" fill="#dca474"/><path d="M6 2h13v5H6z" fill="#172033"/><path d="M15 15h5v5h4v4h-9z" fill="#dca474"/><path d="M21 21h3v12h15v3H21z" fill="#334155"/><path d="M25 18h13v14H25z" fill="#b7793e"/><path d="M29 18h4v14h-4z" fill="#f8d099"/><circle cx="25" cy="36" r="3" fill="#0f172a"/><circle cx="37" cy="36" r="3" fill="#0f172a"/></svg>';
+}
+function showMoverMenu(id) {
+  const mover=movers.find(x=>x.id===id);
+  if(!mover) return;
+  const task=D.transfers.find(t=>TransferLedger.pending(t)&&t.moverId===id);
+  const panel=$('#mover-menu');
+  panel.hidden=false;
+  panel.innerHTML='<button class="menu-close" type="button" aria-label="Close mover menu">×</button><div class="mover-menu-avatar">'+trolleySprite(mover.color)+'</div><h3>'+mover.name+'</h3><p>'+(task?'Delivering '+task.qty+' × '+E(task.item)+' to '+E(task.to):'Available · Trolley ready')+'</p><button class="action mover-transfer" type="button" '+(task?'disabled':'')+'>Transfer</button>'+(task?'<button class="reset mover-receipt" type="button">Confirm delivery</button>':'');
+  panel.querySelector('.menu-close').onclick=()=>{panel.hidden=true};
+  panel.querySelector('.mover-transfer').onclick=()=>openTransfer(id);
+  if(task) panel.querySelector('.mover-receipt').onclick=()=>openDelivery(task.id);
+  panel.querySelector(task?'.mover-receipt':'.mover-transfer').focus();
+}
+function openTransfer(id) {
+  const mover=movers.find(x=>x.id===id);
+  if(!mover) return;
+  D=readState();
+  if(D.transfers.some(t=>TransferLedger.pending(t)&&t.moverId===id)) {
+    render();notify('This mover is busy. Select another available mover.');return;
+  }
+  activeMover=id;
+  $('#mover-menu').hidden=true;
+  $('#dispatch-mover').textContent='Assigned to '+mover.name+' · Trolley ready';
+  $('#transfer-error').textContent='';
+  $('#tqty').removeAttribute('aria-invalid');
+  updateAvailability();
+  $('#transfer-dialog').showModal();
+}
+
 function notify(message) {
   clearTimeout(toastTimer);
   $('#toast-message').textContent = message;
@@ -28,20 +61,25 @@ function renderTransfers() {
   const pending = D.transfers.filter(TransferLedger.pending);
   $('#transit-total').textContent = pending.reduce((n,t)=>n+t.qty,0)+' UNITS IN TRANSIT';
   $('#pending-transfers').innerHTML = pending.length ? pending.map(t=>
-    '<article class="transfer-ticket" id="transfer-'+E(t.id)+'"><div><span class="transit-badge">In transit</span><h3>'+t.qty+' × '+E(t.item)+'</h3><p>'+E(t.from)+' <span aria-hidden="true">→</span> '+E(t.to)+'</p><small>Started '+new Date(t.at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · Destination stock unchanged</small></div><button class="action receive-button" type="button" data-receive="'+E(t.id)+'">Confirm receipt at '+E(t.to)+'</button></article>'
-  ).join('') : '<p class="empty-transfers">No products in transit. Start a transfer below to send a runner.</p>';
+    '<article class="transfer-ticket" id="transfer-'+E(t.id)+'"><div><span class="transit-badge">'+moverName(t.moverId)+' · In transit</span><h3>'+t.qty+' × '+E(t.item)+'</h3><p>'+E(t.from)+' <span aria-hidden="true">→</span> '+E(t.to)+'</p><small>Started '+new Date(t.at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' · Destination stock unchanged</small></div><button class="action receive-button" type="button" data-receive="'+E(t.id)+'">Confirm receipt at '+E(t.to)+'</button></article>'
+  ).join('') : '<p class="empty-transfers">No products in transit. Select a mover on the map to start a transfer.</p>';
   document.querySelectorAll('[data-receive]').forEach(button=>button.onclick=()=>openDelivery(button.dataset.receive));
   const history=D.transfers.filter(t=>t.status==='delivered').sort((a,b)=>b.deliveredAt-a.deliveredAt).slice(0,8);
   $('#delivered-transfers').innerHTML=history.map(t=>'<div class="history-row"><span>✓ '+t.qty+' × '+E(t.item)+' · '+E(t.to)+'</span><small>'+new Date(t.deliveredAt).toLocaleString()+'</small></div>').join('')||'<p class="hint">No deliveries confirmed in this workflow yet.</p>';
-  const sprite='<svg viewBox="0 0 32 38" aria-hidden="true" class="runner-person" shape-rendering="crispEdges"><ellipse cx="16" cy="36" rx="12" ry="2" fill="#17203344"/><g class="runner-legs"><path d="M11 24h5v10h-7v-4h2z" fill="#172033"/><path d="M17 24h5v10h3v3h-8z" fill="#334155"/></g><path d="M10 12h12v14H10z" fill="#f97316"/><path d="M12 4h9v9h-9z" fill="#dca474"/><path d="M10 2h13v5H10z" fill="#172033"/><path d="M8 15h4v10H8z" fill="#dca474"/><path d="M18 15h13v14H18z" fill="#9a5b30"/><path d="M20 17h9v3h-9zm3-2h3v14h-3z" fill="#e7b87b"/></svg>';
-  let paths='',runners='';
-  pending.forEach((t,index)=>{
+  let paths='',people='';
+  movers.forEach(mover=>{
+    const t=pending.find(t=>t.moverId===mover.id);
+    if(!t) {
+      const home=mover.home;
+      people+='<button type="button" class="mover idle" data-mover="'+mover.id+'" aria-label="'+mover.name+', available. Select to transfer." style="left:'+home[0]+'%;top:'+home[1]+'%;--mover-color:'+mover.color+'">'+trolleySprite(mover.color)+'<span class="mover-number">'+mover.number+'</span></button>';
+      return;
+    }
     const [sx,sy]=positions[t.from], [ex,ey]=positions[t.to],elapsed=Math.min(walkDuration,Math.max(0,Date.now()-t.at));
     paths+='<path d="M '+sx+' '+sy+' L 50 61 L '+ex+' '+ey+'" />';
-    runners+='<button type="button" class="runner '+(elapsed>=walkDuration?'awaiting':'')+'" data-runner="'+E(t.id)+'" aria-label="'+E(t.qty+' '+t.item+' from '+t.from+' to '+t.to+'. Awaiting confirmation.')+'" style="--sx:'+sx+'%;--sy:'+sy+'%;--ex:'+ex+'%;--ey:'+ey+'%;animation-delay:-'+elapsed+'ms;z-index:'+(4+index)+'">'+sprite+'<span class="runner-label">'+t.qty+' units · <span class="runner-state">'+(elapsed>=walkDuration?'Confirm receipt':'On the way')+'</span></span></button>';
+    people+='<button type="button" class="runner mover '+(elapsed>=walkDuration?'awaiting':'')+'" data-mover="'+mover.id+'" data-runner="'+E(t.id)+'" data-destination-side="'+(ex>=50?'right':'left')+'" aria-label="'+mover.name+', delivering '+E(t.qty+' '+t.item+' from '+t.from+' to '+t.to)+'. Select for delivery status." style="--sx:'+sx+'%;--sy:'+sy+'%;--ex:'+ex+'%;--ey:'+ey+'%;--mover-color:'+mover.color+';animation-delay:-'+elapsed+'ms">'+trolleySprite(mover.color)+'<span class="mover-number">'+mover.number+'</span><span class="runner-label">'+mover.number+' · '+t.qty+' units · <span class="runner-state">'+(elapsed>=walkDuration?'Confirm receipt':'On the way')+'</span></span></button>';
   });
-  $('#venue').insertAdjacentHTML('beforeend','<svg class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'+paths+'</svg>'+runners);
-  document.querySelectorAll('[data-runner]').forEach(button=>button.onclick=()=>openDelivery(button.dataset.runner));
+  $('#venue').insertAdjacentHTML('beforeend','<svg class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'+paths+'</svg>'+people+'<div class="mover-menu" id="mover-menu" hidden></div><div class="team-label">Trolley team · '+(5-pending.filter(t=>t.moverId).length)+'/5 available</div>');
+  document.querySelectorAll('[data-mover]').forEach(button=>button.onclick=()=>showMoverMenu(button.dataset.mover));
   updateAvailability();
 }
 async function mutateTransfers(operation) {
@@ -65,7 +103,7 @@ async function dispatchTransfer(event) {
   $('#transfer-error').textContent='';
   $('#tqty').removeAttribute('aria-invalid');
   try {
-    const request={id:crypto.randomUUID(),item:$('#titem').value,from:$('#from').value,to:$('#to').value,qty:Number($('#tqty').value),at:Date.now()};
+    const request={id:crypto.randomUUID(),item:$('#titem').value,from:$('#from').value,to:$('#to').value,qty:Number($('#tqty').value),at:Date.now(),moverId:activeMover};
     const result=await mutateTransfers(fresh=>TransferLedger.initiate(M,fresh,request));
     if(!result.ok) {
       $('#transfer-error').textContent=result.error;
@@ -73,7 +111,9 @@ async function dispatchTransfer(event) {
       notify(result.error);
       return;
     }
-    notify('Transfer initiated successfully. '+result.transfer.qty+' units are in transit to '+result.transfer.to+'.');
+    $('#transfer-dialog').close();
+    activeMover=null;
+    notify('Transfer initiated successfully. '+moverName(result.transfer.moverId)+' is moving '+result.transfer.qty+' units to '+result.transfer.to+'.');
     $('#venue').scrollIntoView({behavior:'smooth',block:'center'});
   } catch(error) {
     $('#transfer-error').textContent='Transfer could not be saved. No stock was moved. Please try again.';
@@ -86,6 +126,7 @@ async function dispatchTransfer(event) {
 function openDelivery(id) {
   const transfer=D.transfers.find(t=>t.id===id&&TransferLedger.pending(t));
   if(!transfer) return;
+  $('#mover-menu').hidden=true;
   deliveryId=id;
   $('#delivery-summary').innerHTML='<div class="delivery-quantity">'+transfer.qty+' units</div><p><strong>'+E(transfer.item)+'</strong></p><p>'+E(transfer.from)+' → <strong>'+E(transfer.to)+'</strong></p><p class="hint">Confirm only after all products have been received. This adds '+transfer.qty+' units to '+E(transfer.to)+'.</p>';
   $('#receipt-check').checked=false;
@@ -119,6 +160,8 @@ fill('#from',L);fill('#to',L);fill('#titem',M.map(x=>x[0]));
 $('#from').value='Backstock';
 $('#to').value='Atrium 1';
 $('#transferform').onsubmit=dispatchTransfer;
+$('#close-transfer').onclick=()=>{$('#transfer-dialog').close();activeMover=null};
+$('#transfer-dialog').addEventListener('cancel',()=>{activeMover=null});
 ['#from','#to','#titem'].forEach(id=>$(id).addEventListener('change',()=>{
   D=readState(); updateAvailability(); $('#transfer-error').textContent='';
 }));
