@@ -1,4 +1,18 @@
 const test=require('node:test');
+test('shop tooltips use location-specific sales and prefer reported revenue',()=>{
+ const b=browser();
+ b.run("D.sales=[{item:'Hot Dog',location:'Atrium 1',qty:2},{item:'Hot Dog',location:'Cherry 1',qty:3}]; render()");
+ assert.equal(b.run("shopStats('Atrium 1').revenue"),17);
+ assert.equal(b.run("shopStats('Cherry 1').revenue"),25.5);
+ assert.equal(b.run("shopStats('Backstock').revenue"),0);
+ assert.equal(b.run("shopStats('Atrium 1').estimated"),true);
+ b.run("toastSummary={totals:{revenue:41},locations:[{locationName:'Atrium 1',revenue:15.5}]};render()");
+ assert.equal(b.run("shopStats('Atrium 1').revenue"),15.5);
+ assert.equal(b.run("shopStats('Atrium 1').estimated"),false);
+ assert.match(b.el('#venue').innerHTML,/health-track/);
+ assert.match(b.el('#venue').innerHTML,/role="tooltip"/);
+ assert.doesNotMatch(b.el('#venue').innerHTML,/shop-quantity/);
+});
 
 test('unassigned requests reserve stock, wait for a transporter, and record each state',()=>{
  const d=empty();

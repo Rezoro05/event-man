@@ -7,6 +7,26 @@ const st=(i,l)=>TransferLedger.stock(M,D,i,l);
 const tot=(f,ls=S)=>M.reduce((a,[i])=>a+ls.reduce((b,l)=>b+f(i,l),0),0);
 const status=(i,l)=>TransferLedger.stockStatus(st(i,l),op(i,l));
 const healthText=(s,n)=>n<0?'COUNT MISMATCH':({out:'OUT OF STOCK',critical:'NEARLY OUT',low:'LOW STOCK',ok:'HEALTHY'}[s]);
+const dollars=value=>Number(value).toLocaleString('en-US',{style:'currency',currency:'USD'});
+function shopStats(location){
+  const report=toastSummary?.locations?.find(row=>row.locationName===location);
+  const sold=tot(so,[location]);
+  const revenue=Number.isFinite(report?.revenue)?report.revenue:M.reduce((sum,[item,price])=>sum+price*so(item,location),0);
+  return {stock:tot(st,[location]),sold,revenue,estimated:!report&&sold>0&&location!=='Backstock'};
+}
+function selectShop(button,event){
+  const location=button.dataset.l;
+  const touch=event?.pointerType==='touch'||(typeof matchMedia==='function'&&matchMedia('(hover: none)').matches);
+  const alreadyOpen=button.classList.contains('show-tooltip');
+  document.querySelectorAll('.shop').forEach(other=>{
+    other.classList.toggle('active',other===button);
+    other.classList.remove('show-tooltip','tooltip-dismissed');
+  });
+  sel=location;
+  detail();
+  if(touch&&!alreadyOpen)button.classList.add('show-tooltip');
+  else $('#detail').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
 function render(){
   const issues=[];
   S.forEach(l=>M.forEach(([i])=>{if(op(i,l)&&status(i,l)!=='ok')issues.push({i,l,s:status(i,l),n:st(i,l)})}));
@@ -18,10 +38,18 @@ function render(){
   $('#venue').innerHTML='<img src="assets/garden-map.png" alt="Pixel-art botanical garden selling-point map">'+L.map(l=>{
     const n=tot(st,[l]),o=tot(op,[l]),alerts=issues.filter(x=>x.l===l);
     const severity=alerts.some(x=>x.s==='out'||x.s==='critical')?'out':alerts.length?'low':'ok';
-    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' '+n+' on hand"><b>'+E(l==='Backstock'?'Backstock':l)+'</b><span class="shop-quantity"><strong>'+n+'</strong> <small>on hand</small></span><div class="battery '+severity+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div>'+(alerts.length?'<span class="tag '+severity+'">'+alerts.length+' '+(severity==='out'?'URGENT':'LOW')+'</span>':'')+'</button>';
+    const stats=shopStats(l),percentage=Math.max(0,Math.min(100,n/Math.max(o,1)*100)),tooltipId='shop-stats-'+pins[l];
+    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' — view inventory" aria-describedby="'+tooltipId+'"><span class="shop-name">'+E(l==='Backstock'?'Backstock':l)+'</span><span class="health-track '+severity+'" aria-hidden="true"><span class="health-fill" style="width:'+percentage+'%"></span></span>'+(alerts.length?'<span class="health-alert '+severity+'" aria-hidden="true">!</span>':'')+'<span class="shop-tooltip" id="'+tooltipId+'" role="tooltip"><span class="tooltip-title">'+E(l==='Backstock'?'Central warehouse':l)+'</span><span class="tooltip-row"><span>Stock available</span><strong>'+n+' units</strong></span><span class="tooltip-row"><span>Units sold</span><strong>'+stats.sold+'</strong></span><span class="tooltip-row sales-row"><span>'+(stats.estimated?'Est. sales':'Sales')+'</span><strong>'+dollars(stats.revenue)+'</strong></span><span class="tooltip-note">'+(alerts.length?alerts.length+' item'+(alerts.length===1?'':'s')+' need attention':Math.round(percentage)+'% of opening stock')+(stats.estimated?' · At menu prices':'')+'</span><span class="tooltip-instruction">Click to inspect items<span class="touch-instruction">Tap again to inspect items</span></span></span></button>';
+
   }).join('');
   renderTransfers();
-  document.querySelectorAll('.shop').forEach(b=>b.onclick=()=>{sel=b.dataset.l;render();$('#detail').scrollIntoView({behavior:'smooth',block:'nearest'})});
+  document.querySelectorAll('.shop').forEach(button=>{
+    button.onclick=event=>selectShop(button,event);
+    button.onkeydown=event=>{if(event.key==='Escape'){button.classList.add('tooltip-dismissed');button.classList.remove('show-tooltip');}};
+    button.onmouseenter=()=>button.classList.remove('tooltip-dismissed');
+    button.onfocus=()=>button.classList.remove('tooltip-dismissed');
+    button.onblur=()=>button.classList.remove('show-tooltip');
+  });
   detail();
   $('#watch').innerHTML=issues.sort((a,b)=>a.n-b.n).map(x=>'<tr><td>'+E(x.i)+'</td><td>'+E(x.l)+'</td><td class="num">'+x.n+'</td><td><span class="pill '+x.s+'">'+healthText(x.s,x.n)+'</span></td></tr>').join('')||'<tr><td colspan="4">All stock levels are healthy.</td></tr>';
   const max=Math.max(...S.map(l=>tot(st,[l])),1);
