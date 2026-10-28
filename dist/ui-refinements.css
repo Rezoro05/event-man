@@ -1,0 +1,69 @@
+
+/* Compact labels sit below the buildings, leaving the stall roofs visible. */
+.shop{width:108px;min-height:44px;padding:5px 7px;border-width:1px;border-radius:9px;box-shadow:0 3px 9px #17203355}
+.shop b{display:block;font-size:12px;line-height:1.15;white-space:nowrap}
+.shop-quantity{display:block;line-height:1.25;margin-top:2px}
+.shop-quantity strong{font-size:12px;font-weight:800}
+.shop small{font-size:9px}
+.shop .battery{height:4px;margin-top:4px}
+.av,.c1{top:29%}
+.a1,.c2{top:90%}
+.bs{top:64%}
+.tag{font-size:8px;top:-8px;right:-5px;padding:2px 4px;border-width:1px}
+.tag.low{background:#facc15;color:#713f12}
+.tag.out{background:#dc2626;color:#fff}
+.inventory-item{border-radius:7px;padding:9px 8px;margin:4px -3px;border:1px solid transparent}
+.inventory-item .row{gap:8px;flex-wrap:wrap}
+.inventory-item .row span:first-child{max-width:100%}
+.inventory-item.low{background:#fef9c3;border:1px solid #eab308}
+.inventory-item.critical,.inventory-item.out{background:#fef2f2;border:1px solid #ef4444}
+.inventory-item.low .row span:first-child,.inventory-item.low .nums,.inventory-item.low .stock-status{color:#713f12}
+.inventory-item.critical .row span:first-child,.inventory-item.out .row span:first-child,.inventory-item.critical .nums,.inventory-item.out .nums,.inventory-item.critical .stock-status,.inventory-item.out .stock-status{color:#b91c1c}
+.stock-status{display:block;font:800 9px system-ui,sans-serif;letter-spacing:.03em;margin:5px 0}
+.inventory-item.low .bar{background:#fef08a}
+.inventory-item.low .bar i{background:#ca8a04}
+.inventory-item.critical .bar,.inventory-item.out .bar{background:#fecaca}
+.inventory-item.critical .bar i,.inventory-item.out .bar i{background:#dc2626}
+.pill.critical{background:#fee2e2;color:#b91c1c}
+.stock-legend{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;font-weight:700;margin-top:10px}
+.legend-low{background:#fef9c3;color:#713f12;border-radius:6px;padding:5px 8px}
+.legend-critical{background:#fef2f2;color:#b91c1c;border-radius:6px;padding:5px 8px;border:1px solid #fecaca}
+.notice.low{background:#fef9c3;border-color:#eab308;color:#713f12}
+.transfer-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.transfer-actions button{margin:0;min-height:40px;padding:8px 12px;cursor:pointer}
+.item-search{position:relative}
+.item-results{max-height:220px;overflow-y:auto;border:1px solid #d6d3d1;border-radius:9px;background:#fff;box-shadow:0 6px 20px #17203314;margin-top:4px}
+.item-results[hidden]{display:none}
+.item-results button{display:flex;width:100%;justify-content:space-between;gap:10px;align-items:center;text-align:left;border:0;border-bottom:1px solid #eee;background:#fff;padding:11px 12px;min-height:44px;color:var(--ink);font-size:13px;cursor:pointer}
+.item-results button small{white-space:nowrap;font-size:11px;color:#64748b}
+.item-results button:hover,.item-results button[aria-selected="true"]{background:#fff1e5}
+.no-results{padding:8px 12px;font-size:13px;color:#64748b}
+.assignment{min-width:180px;display:grid;gap:7px}
+.assignment label{margin:0}
+.transit-badge.waiting{background:#fef9c3;color:#713f12}
+#history-dialog{width:min(780px,calc(100vw - 24px));max-height:88vh;overflow:auto}
+#history-dialog>label{margin-top:16px}
+#history-list{margin-top:14px}
+.history-ticket{padding:14px;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.history-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.history-top strong{font-size:14px}
+.history-ticket p{font-size:12px;color:#64748b}
+.history-status{font-size:10px;font-weight:800;white-space:nowrap;padding:4px 7px;border-radius:99px;background:#f1f5f9}
+.history-status.looking_for_transporter{background:#fef9c3;color:#713f12}
+.history-status.in_transit{background:#dbeafe;color:#1e40af}
+.history-status.delivered{background:#dcfce7;color:#166534}
+.transfer-timeline{list-style:none;padding:0;margin:12px 0 0}
+.transfer-timeline li{display:flex;justify-content:space-between;gap:10px;border-left:2px solid #fed7aa;padding:4px 0 7px 12px;font-size:12px}
+.transfer-timeline time{color:#64748b;font-size:11px}
+@media(max-width:600px){
+  .shop{width:86px;padding:4px 6px;border-radius:8px}
+  .shop b{font-size:10px}
+  .shop-quantity strong{font-size:11px}
+  .shop small{font-size:8px}
+  .shop .battery{height:3px;margin-top:3px}
+  .transfer-actions{justify-content:flex-start}
+  .history-top{flex-direction:column}
+  .transfer-timeline li{flex-direction:column;gap:2px}
+  .item-results button{flex-wrap:wrap}
+}
+

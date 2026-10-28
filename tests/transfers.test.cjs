@@ -1,5 +1,48 @@
 const test=require('node:test');
 
+test('unassigned requests reserve stock, wait for a transporter, and record each state',()=>{
+ const d=empty();
+ assert.equal(Ledger.initiate(menu,d,request(5,{moverId:null})).ok,true);
+ assert.equal(d.transfers[0].status,'looking_for_transporter');
+ assert.equal(Ledger.stock(menu,d,'Pretzel','Backstock'),30);
+ assert.equal(Ledger.stock(menu,d,'Pretzel','Cherry 1'),10);
+ assert.equal(Ledger.confirmDelivery(d,'t1',2000).ok,false);
+ assert.equal(Ledger.assignMover(d,'t1','mover-3',3000).ok,true);
+ assert.equal(Ledger.stock(menu,d,'Pretzel','Backstock'),30);
+ assert.equal(Ledger.assignMover(d,'t1','mover-4',4000).ok,false);
+ assert.equal(Ledger.confirmDelivery(d,'t1',5000).ok,true);
+ assert.equal(Ledger.stock(menu,d,'Pretzel','Cherry 1'),15);
+ assert.deepEqual(d.transfers[0].events.map(e=>e.status),['initiated','looking_for_transporter','in_transit','delivered']);
+});
+test('stock warnings distinguish healthy, low, near empty, zero and negative',()=>{
+ assert.equal(Ledger.stockStatus(20,20),'ok');
+ assert.equal(Ledger.stockStatus(4,20),'low');
+ assert.equal(Ledger.stockStatus(2,20),'critical');
+ assert.equal(Ledger.stockStatus(0,20),'out');
+ assert.equal(Ledger.stockStatus(-32,18),'out');
+});
+test('typed item search matches product fragments, brand, and alternate accent spelling',()=>{
+ const b=browser();
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/ui-tools.js'),'utf8'),b.context);
+ assert.equal(b.run("findItems('pretz')[0][0]"),'Warm Salted Pretzel VGO');
+ assert.equal(b.run("findItems('talea').length"),2);
+ assert.equal(b.run("findItems('zokto')[0][0]"),'KCBC Zøktoberfest 16 oz');
+ assert.equal(b.run("findItems('no-such-item').length"),0);
+ b.run("renderItemSearch('pretz'); selectItem(0)");
+ assert.equal(b.el('#titem').value,'Warm Salted Pretzel VGO');
+});
+test('item rows show severity and history displays queued-to-delivered event trail',()=>{
+ const b=browser();
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/ui-tools.js'),'utf8'),b.context);
+ b.run("D.sales=[{item:'Warm Salted Pretzel VGO',location:'Atrium 1',qty:23},{item:'Hot Dog',location:'Atrium 1',qty:20}]; render()");
+ assert.match(b.el('#detail').innerHTML,/inventory-item critical/);
+ assert.match(b.el('#detail').innerHTML,/inventory-item low/);
+ assert.match(b.el('#detail').innerHTML,/NEARLY OUT/);
+ b.run("D.transfers=[{item:'Hot Dog',from:'Backstock',to:'Cherry 1',qty:3,status:'looking_for_transporter',events:[{status:'initiated',at:1000},{status:'looking_for_transporter',at:1000}]}];renderHistory()");
+ assert.match(b.el('#history-list').innerHTML,/Initiated/);
+ assert.match(b.el('#history-list').innerHTML,/Looking for transporter/);
+});
+
 test('five movers are selectable and the transfer form opens for the selected person',()=>{
  const b=browser();
  assert.equal((b.el('#venue').innerHTML.match(/data-mover=/g)||[]).length,5);
