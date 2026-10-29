@@ -88,7 +88,7 @@ function renderHistory(){
   }).sort((a,b)=>(b.at||0)-(a.at||0)||b.historyIndex-a.historyIndex);
   $('#history-list').innerHTML=entries.map(t=>{
     const state=t.status||'delivered';
-    return '<article class="history-ticket"><div class="history-top"><strong>'+t.qty+' × '+E(t.item)+'</strong><span class="history-status '+state+'">'+(transferStatusLabels[state]||state)+'</span></div><p>'+E(t.from)+' → '+E(t.to)+' · '+(t.moverId?moverName(t.moverId):state==='looking_for_transporter'?'Transporter needed':'Transporter not recorded')+'</p><ol class="transfer-timeline">'+transferEvents(t).map(event=>'<li><span>'+transferStatusLabels[event.status]+'</span><time>'+formatEventTime(event.at)+'</time></li>').join('')+'</ol></article>';
+    return '<article class="history-ticket"><div class="history-top"><strong>'+t.qty+' × '+E(t.item)+'</strong><span class="history-status '+state+'">'+(transferStatusLabels[state]||state)+'</span></div><p>'+E(t.from)+' → '+E(t.to)+' · '+(t.moverId?E(moverName(t.moverId)):state==='looking_for_transporter'?'Transporter needed':'Transporter not recorded')+'</p><ol class="transfer-timeline">'+transferEvents(t).map(event=>'<li><span>'+transferStatusLabels[event.status]+'</span><time>'+formatEventTime(event.at)+'</time></li>').join('')+'</ol></article>';
   }).join('')||'<p class="empty-transfers">No transfers match this status.</p>';
 }
 $('#history-filter').onchange=renderHistory;
@@ -96,4 +96,3 @@ $('#open-history').onclick=()=>{D=readState();renderHistory();$('#history-dialog
 $('#close-history').onclick=()=>$('#history-dialog').close();
 $('#request-transfer').onclick=()=>openTransfer(null);
 renderHistory();
-

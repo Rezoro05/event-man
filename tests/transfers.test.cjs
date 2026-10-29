@@ -62,7 +62,7 @@ test('five movers are selectable and the transfer form opens for the selected pe
  assert.equal((b.el('#venue').innerHTML.match(/data-mover=/g)||[]).length,5);
  b.run("openTransfer('mover-3')");
  assert.equal(b.el('#transfer-dialog').open,true);
- assert.match(b.el('#dispatch-mover').textContent,/Mover 3/);
+ assert.match(b.el('#dispatch-mover').textContent,/Hand 3/);
  assert.equal(b.run('activeMover'),'mover-3');
 });
 test('one delivery per mover; confirmed receipt releases the mover for a new job',()=>{

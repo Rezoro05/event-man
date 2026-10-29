@@ -1,6 +1,6 @@
 # Rezi’s Event Inventory System
 
-Project requirements, operating guide, and technical handoff · Updated October 28, 2026
+Project requirements, operating guide, and technical handoff · Updated October 29, 2026
 
 [Open the dashboard](https://rezis-event-inventory-dashboard.rezoro.chatgpt.site/)
 
@@ -13,6 +13,21 @@ Help an event manager see stock at every selling point, identify shortages, disp
 This document separates current behavior from required future work. It describes the source in this repository; publishing is a separate deployment step.
 
 ## 2. Event configuration
+
+### New: station artwork and staffing
+
+The four selling points use an open-kitchen station sprite based on the supplied October 28 design reference. Each station is a separate map object; its name and health bar are attached at its top center with a shared 8px gap above the artwork's upper edge. The garden background no longer contains baked-in shops. The central warehouse is retained.
+
+- The five existing movers are now blue **Hands** characters with names above them. Click a Hand, then **Rename Hand** to change its name, or **Transfer** to use the existing stock-transfer workflow.
+- Selecting a station shows its **Sales** and **Chef** counts, names, and character cards above the inventory list. The visible crew on each station reflects its assignments.
+- Click a person's card to rename them or choose another assigned station. Click **Manage team** for the complete roster, including staff at other stations and Backstock.
+- The initial example roster contains one Sales person and one Chef at each selling station, plus five Hands. These are editable placeholders, not confirmed event staffing.
+- Staff moves are immediate assignment changes, not physical arrival confirmations or inventory transfers. They update both locations without changing stock. Hands retain the original transfer confirmation rules.
+- Names are limited to 30 characters. Stable IDs preserve a Hand's active delivery when renamed. Names are escaped before display.
+- Staff data is stored separately in `rezis-staff-v1` in this browser, with same-origin tab updates and browser-lock serialization where available. It is not shared between devices. Stored malformed data is reported rather than silently overwritten.
+- The staffing record has `{version: 1, people: [{id, name, role, location}], events: []}`. Roles are `hands`, `sales`, and `chef`. Hands have `location: null`; station staff have one of the five location names. Rename/move events record prior and new assignments and names.
+
+Implementation: `dist/staff-ledger.js` validates and saves the roster; `dist/staff-ui.js` provides editor and roster dialogs; `dist/staff.css` styles the characters and stations. Artwork and generation prompts are documented in [ASSETS.md](ASSETS.md).
 
 | Setting | Value |
 | --- | --- |
@@ -346,10 +361,10 @@ Open `http://127.0.0.1:4320/`. Stop with Ctrl+C. This serves only `dist`; the si
 node --check dist/app.js
 node --check dist/transfer-ledger.js
 node --check dist/ui-tools.js
-node --test tests/transfers.test.cjs
+node --test tests/*.test.cjs
 ```
 
-The current suite contains 14 tests. Browser checks are also needed for map layout, keyboard/touch behavior, tooltip positioning, reduced motion, modal focus, and narrow screens. Automated unit tests do not validate a real Toast integration.
+The suite includes transfer regressions and staffing tests for counts, moves, names, persistence, failed saves, and preserving active delivery assignments. Browser checks are also needed for map layout, keyboard/touch behavior, tooltip positioning, reduced motion, modal focus, and narrow screens. Automated unit tests do not validate a real Toast integration.
 
 ### Publishing
 

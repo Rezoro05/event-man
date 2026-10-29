@@ -14,6 +14,13 @@ function shopStats(location){
   const revenue=Number.isFinite(report?.revenue)?report.revenue:M.reduce((sum,[item,price])=>sum+price*so(item,location),0);
   return {stock:tot(st,[location]),sold,revenue,estimated:!report&&sold>0&&location!=='Backstock'};
 }
+function stationArtwork(location){
+  const people=typeof StaffRoster!=='undefined'?(StaffRoster.get()?.people||[]):[];
+  return '<img class="station-art" src="assets/sales-station.png" alt="" aria-hidden="true">'+['chef','sales'].map(role=>{
+    const staff=people.filter(p=>p.location===location&&p.role===role);
+    return '<span class="station-crew crew-'+role+'" aria-hidden="true">'+staff.slice(0,4).map(p=>'<span class="staff-sprite sprite-'+role+'"></span>').join('')+(staff.length>4?'<span class="crew-extra">+'+(staff.length-4)+'</span>':'')+'</span>';
+  }).join('');
+}
 function selectShop(button,event){
   const location=button.dataset.l;
   const touch=event?.pointerType==='touch'||(typeof matchMedia==='function'&&matchMedia('(hover: none)').matches);
@@ -35,11 +42,11 @@ function render(){
   $('#kpis').innerHTML=kpis.map(([label,value],i)=>'<div class="kpi '+((i===4||i===5)&&value?'alert':'')+'"><small>'+label+'</small><strong>'+value+'</strong></div>').join('');
   $('#notices').innerHTML=issues.length?issues.slice(0,3).map(x=>'<span class="notice '+x.s+'">'+E(x.i)+' · '+E(x.l)+' · '+healthText(x.s,x.n)+'</span>').join(''):'<span class="notice ok">✓ No refill signals</span>';
   const pins={'Atrium VIP':'av','Cherry 1':'c1','Atrium 1':'a1','Cherry 2':'c2',Backstock:'bs'};
-  $('#venue').innerHTML='<img src="assets/garden-map.png" alt="Pixel-art botanical garden selling-point map">'+L.map(l=>{
+  $('#venue').innerHTML='<img src="assets/garden-base.png" alt="Pixel-art botanical garden selling-point map">'+L.map(l=>{
     const n=tot(st,[l]),o=tot(op,[l]),alerts=issues.filter(x=>x.l===l);
     const severity=alerts.some(x=>x.s==='out'||x.s==='critical')?'out':alerts.length?'low':'ok';
     const stats=shopStats(l),percentage=Math.max(0,Math.min(100,n/Math.max(o,1)*100)),tooltipId='shop-stats-'+pins[l];
-    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' — view inventory" aria-describedby="'+tooltipId+'"><span class="shop-name">'+E(l==='Backstock'?'Backstock':l)+'</span><span class="health-track '+severity+'" aria-hidden="true"><span class="health-fill" style="width:'+percentage+'%"></span></span>'+(alerts.length?'<span class="health-alert '+severity+'" aria-hidden="true">!</span>':'')+'<span class="shop-tooltip" id="'+tooltipId+'" role="tooltip"><span class="tooltip-title">'+E(l==='Backstock'?'Central warehouse':l)+'</span><span class="tooltip-row"><span>Stock available</span><strong>'+n+' units</strong></span><span class="tooltip-row"><span>Units sold</span><strong>'+stats.sold+'</strong></span><span class="tooltip-row sales-row"><span>'+(stats.estimated?'Est. sales':'Sales')+'</span><strong>'+dollars(stats.revenue)+'</strong></span><span class="tooltip-note">'+(alerts.length?alerts.length+' item'+(alerts.length===1?'':'s')+' need attention':Math.round(percentage)+'% of opening stock')+(stats.estimated?' · At menu prices':'')+'</span><span class="tooltip-instruction">Click to inspect items<span class="touch-instruction">Tap again to inspect items</span></span></span></button>';
+    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'sales-station ')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' — view inventory" aria-describedby="'+tooltipId+'">'+(l==='Backstock'?'':stationArtwork(l))+'<span class="shop-hud"><span class="shop-name">'+E(l==='Backstock'?'Backstock':l)+'</span><span class="health-track '+severity+'" aria-hidden="true"><span class="health-fill" style="width:'+percentage+'%"></span></span>'+(alerts.length?'<span class="health-alert '+severity+'" aria-hidden="true">!</span>':'')+'</span><span class="shop-tooltip" id="'+tooltipId+'" role="tooltip"><span class="tooltip-title">'+E(l==='Backstock'?'Central warehouse':l)+'</span><span class="tooltip-row"><span>Stock available</span><strong>'+n+' units</strong></span><span class="tooltip-row"><span>Units sold</span><strong>'+stats.sold+'</strong></span><span class="tooltip-row sales-row"><span>'+(stats.estimated?'Est. sales':'Sales')+'</span><strong>'+dollars(stats.revenue)+'</strong></span><span class="tooltip-note">'+(alerts.length?alerts.length+' item'+(alerts.length===1?'':'s')+' need attention':Math.round(percentage)+'% of opening stock')+(stats.estimated?' · At menu prices':'')+'</span><span class="tooltip-instruction">Click to inspect items<span class="touch-instruction">Tap again to inspect items</span></span></span></button>';
 
   }).join('');
   renderTransfers();
@@ -63,6 +70,7 @@ function detail(){
     const n=st(i,sel),o=op(i,sel),q=status(i,sel);
     return '<div class="line inventory-item '+q+'"><div class="row"><span>'+E(i)+'</span><span class="nums">'+n+'/'+o+' · '+so(i,sel)+' sold</span></div>'+(q!=='ok'?'<span class="stock-status">'+healthText(q,n)+(n<0?' · Reconcile this item count':'')+'</span>':'')+'<div class="bar '+q+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div></div>';
   }).join('')+'</div></article>').join('')+'</div>';
+  if(typeof renderStationStaff==='function')renderStationStaff();
 }
 function fill(id,v){$(id).innerHTML=v.map(x=>'<option>'+E(x)+'</option>').join('')}
 
@@ -75,10 +83,10 @@ function readState() {
 const positions = {'Atrium 1':[18.4,75],'Atrium VIP':[18.4,38],'Cherry 1':[80.8,38],'Cherry 2':[80.8,75],Backstock:[50,68]};
 const walkDuration = 12000;
 let toastTimer, deliveryId = null, transferBusy = false, activeMover = null;
-const movers=TransferLedger.moverIds.map((id,index)=>({id,name:'Mover '+(index+1),number:index+1,color:['#f97316','#2563eb','#9333ea','#0f766e','#e11d48'][index],home:[[28,48],[30,64],[50,77],[70,64],[72,48]][index]}));
+const movers=TransferLedger.moverIds.map((id,index)=>({id,get name(){return typeof StaffRoster!=='undefined'?StaffRoster.name(id,'Hand '+(index+1)):'Hand '+(index+1)},number:index+1,color:['#f97316','#2563eb','#9333ea','#0f766e','#e11d48'][index],home:[[28,48],[30,64],[50,77],[70,64],[72,48]][index]}));
 const moverName=id=>movers.find(m=>m.id===id)?.name||'Runner';
 function trolleySprite(color) {
-  return '<svg viewBox="0 0 42 40" aria-hidden="true" class="runner-person" shape-rendering="crispEdges"><ellipse cx="22" cy="38" rx="19" ry="2" fill="#17203333"/><g class="runner-legs"><path d="M7 24h5v10H5v-4h2z" fill="#172033"/><path d="M13 24h5v10h2v3h-7z" fill="#334155"/></g><path d="M6 12h12v14H6z" fill="'+color+'"/><path d="M8 4h9v9H8z" fill="#dca474"/><path d="M6 2h13v5H6z" fill="#172033"/><path d="M15 15h5v5h4v4h-9z" fill="#dca474"/><path d="M21 21h3v12h15v3H21z" fill="#334155"/><path d="M25 18h13v14H25z" fill="#b7793e"/><path d="M29 18h4v14h-4z" fill="#f8d099"/><circle cx="25" cy="36" r="3" fill="#0f172a"/><circle cx="37" cy="36" r="3" fill="#0f172a"/></svg>';
+  return '<span class="runner-person staff-sprite sprite-hands" aria-hidden="true"></span>';
 }
 function showMoverMenu(id) {
   const mover=movers.find(x=>x.id===id);
@@ -86,9 +94,10 @@ function showMoverMenu(id) {
   const task=D.transfers.find(t=>TransferLedger.pending(t)&&t.moverId===id);
   const panel=$('#mover-menu');
   panel.hidden=false;
-  panel.innerHTML='<button class="menu-close" type="button" aria-label="Close mover menu">×</button><div class="mover-menu-avatar">'+trolleySprite(mover.color)+'</div><h3>'+mover.name+'</h3><p>'+(task?'Delivering '+task.qty+' × '+E(task.item)+' to '+E(task.to):'Available · Trolley ready')+'</p><button class="action mover-transfer" type="button" '+(task?'disabled':'')+'>Transfer</button>'+(task?'<button class="reset mover-receipt" type="button">Confirm delivery</button>':'');
+  panel.innerHTML='<button class="menu-close" type="button" aria-label="Close mover menu">×</button><div class="mover-menu-avatar">'+trolleySprite(mover.color)+'</div><h3>'+E(mover.name)+'</h3><p>'+(task?'Delivering '+task.qty+' × '+E(task.item)+' to '+E(task.to):'Available · Trolley ready')+'</p><button class="action mover-transfer" type="button" '+(task?'disabled':'')+'>Transfer</button>'+(task?'<button class="reset mover-receipt" type="button">Confirm delivery</button>':'')+'<button type="button" class="reset mover-edit">Rename Hand</button>';
   panel.querySelector('.menu-close').onclick=()=>{panel.hidden=true};
   panel.querySelector('.mover-transfer').onclick=()=>openTransfer(id);
+  panel.querySelector('.mover-edit').onclick=()=>{panel.hidden=true;if(typeof openStaffEditor==='function')openStaffEditor(id);};
   if(task) panel.querySelector('.mover-receipt').onclick=()=>openDelivery(task.id);
   panel.querySelector(task?'.mover-receipt':'.mover-transfer').focus();
 }
@@ -127,8 +136,8 @@ function renderTransfers() {
   const freeMovers=movers.filter(m=>!pending.some(t=>t.moverId===m.id));
   $('#pending-transfers').innerHTML=pending.length?pending.map(t=>{
     const waiting=TransferLedger.waiting(t);
-    const action=waiting?'<div class="assignment"><label for="assign-'+E(t.id)+'">Choose transporter</label><select id="assign-'+E(t.id)+'">'+freeMovers.map(m=>'<option value="'+m.id+'">'+m.name+'</option>').join('')+'</select><button class="action" type="button" data-assign="'+E(t.id)+'" '+(freeMovers.length?'':'disabled')+'>Assign transporter</button>'+(freeMovers.length?'':'<small>All five movers are on a task.</small>')+'</div>':'<button class="action receive-button" type="button" data-receive="'+E(t.id)+'">Confirm receipt at '+E(t.to)+'</button>';
-    return '<article class="transfer-ticket" id="transfer-'+E(t.id)+'"><div><span class="transit-badge '+(waiting?'waiting':'')+'">'+(waiting?'Looking for transporter':moverName(t.moverId)+' · On a task')+'</span><h3>'+t.qty+' × '+E(t.item)+'</h3><p>'+E(t.from)+' → '+E(t.to)+'</p><small>Initiated '+formatEventTime(t.at)+' · '+(waiting?'Reserved at source':'Destination stock unchanged')+'</small></div>'+action+'</article>';
+    const action=waiting?'<div class="assignment"><label for="assign-'+E(t.id)+'">Choose transporter</label><select id="assign-'+E(t.id)+'">'+freeMovers.map(m=>'<option value="'+m.id+'">'+E(m.name)+'</option>').join('')+'</select><button class="action" type="button" data-assign="'+E(t.id)+'" '+(freeMovers.length?'':'disabled')+'>Assign transporter</button>'+(freeMovers.length?'':'<small>All five movers are on a task.</small>')+'</div>':'<button class="action receive-button" type="button" data-receive="'+E(t.id)+'">Confirm receipt at '+E(t.to)+'</button>';
+    return '<article class="transfer-ticket" id="transfer-'+E(t.id)+'"><div><span class="transit-badge '+(waiting?'waiting':'')+'">'+(waiting?'Looking for transporter':E(moverName(t.moverId))+' · On a task')+'</span><h3>'+t.qty+' × '+E(t.item)+'</h3><p>'+E(t.from)+' → '+E(t.to)+'</p><small>Initiated '+formatEventTime(t.at)+' · '+(waiting?'Reserved at source':'Destination stock unchanged')+'</small></div>'+action+'</article>';
   }).join(''):'<p class="empty-transfers">No active transfers. Select a mover on the map or request a transfer.</p>';
   document.querySelectorAll('[data-receive]').forEach(button=>button.onclick=()=>openDelivery(button.dataset.receive));
   document.querySelectorAll('[data-assign]').forEach(button=>button.onclick=()=>assignTransporter(button.dataset.assign));
@@ -139,14 +148,14 @@ function renderTransfers() {
     const t=pending.find(t=>t.moverId===mover.id);
     if(!t) {
       const home=mover.home;
-      people+='<button type="button" class="mover idle" data-mover="'+mover.id+'" aria-label="'+mover.name+', available. Select to transfer." style="left:'+home[0]+'%;top:'+home[1]+'%;--mover-color:'+mover.color+'">'+trolleySprite(mover.color)+'<span class="mover-number">'+mover.number+'</span></button>';
+      people+='<button type="button" class="mover idle" data-mover="'+mover.id+'" aria-label="'+E(mover.name)+', available. Select to transfer." style="left:'+home[0]+'%;top:'+home[1]+'%;--mover-color:'+mover.color+'">'+trolleySprite(mover.color)+'<span class="mover-name">'+E(mover.name)+'</span></button>';
       return;
     }
     const [sx,sy]=positions[t.from], [ex,ey]=positions[t.to],elapsed=Math.min(walkDuration,Math.max(0,Date.now()-(t.assignedAt||t.at)));
     paths+='<path d="M '+sx+' '+sy+' L 50 61 L '+ex+' '+ey+'" />';
-    people+='<button type="button" class="runner mover '+(elapsed>=walkDuration?'awaiting':'')+'" data-mover="'+mover.id+'" data-runner="'+E(t.id)+'" data-destination-side="'+(ex>=50?'right':'left')+'" aria-label="'+mover.name+', delivering '+E(t.qty+' '+t.item+' from '+t.from+' to '+t.to)+'. Select for delivery status." style="--sx:'+sx+'%;--sy:'+sy+'%;--ex:'+ex+'%;--ey:'+ey+'%;--mover-color:'+mover.color+';animation-delay:-'+elapsed+'ms">'+trolleySprite(mover.color)+'<span class="mover-number">'+mover.number+'</span><span class="runner-label">'+mover.number+' · '+t.qty+' units · <span class="runner-state">'+(elapsed>=walkDuration?'Confirm receipt':'On the way')+'</span></span></button>';
+    people+='<button type="button" class="runner mover '+(elapsed>=walkDuration?'awaiting':'')+'" data-mover="'+mover.id+'" data-runner="'+E(t.id)+'" data-destination-side="'+(ex>=50?'right':'left')+'" aria-label="'+E(mover.name)+', delivering '+E(t.qty+' '+t.item+' from '+t.from+' to '+t.to)+'. Select for delivery status." style="--sx:'+sx+'%;--sy:'+sy+'%;--ex:'+ex+'%;--ey:'+ey+'%;--mover-color:'+mover.color+';animation-delay:-'+elapsed+'ms">'+trolleySprite(mover.color)+'<span class="mover-name">'+E(mover.name)+'</span><span class="runner-label">'+mover.number+' · '+t.qty+' units · <span class="runner-state">'+(elapsed>=walkDuration?'Confirm receipt':'On the way')+'</span></span></button>';
   });
-  $('#venue').insertAdjacentHTML('beforeend','<svg class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'+paths+'</svg>'+people+'<div class="mover-menu" id="mover-menu" hidden></div><div class="team-label">Trolley team · '+(5-pending.filter(t=>t.moverId).length)+'/5 available</div>');
+  $('#venue').insertAdjacentHTML('beforeend','<svg class="route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">'+paths+'</svg>'+people+'<div class="mover-menu" id="mover-menu" hidden></div><div class="team-label">Hands team · '+(5-pending.filter(t=>t.moverId).length)+'/5 available</div>');
   document.querySelectorAll('[data-mover]').forEach(button=>button.onclick=()=>showMoverMenu(button.dataset.mover));
   updateAvailability();
 }

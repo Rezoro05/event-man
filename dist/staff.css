@@ -1,0 +1,34 @@
+.staff-sprite{display:inline-block;width:72px;height:72px;background-image:url('assets/staff-sprites.png');background-size:300% 100%;background-repeat:no-repeat;image-rendering:pixelated;flex-shrink:0}
+.sprite-sales{background-position:0 0}.sprite-chef{background-position:50% 0}.sprite-hands{background-position:100% 0}
+.shop-hud{display:block;width:100%;position:relative}
+.venue .shop.sales-station{width:15%;min-height:0;padding:0;display:block;transform:translate(-50%,0);top:7%;aspect-ratio:1}
+.venue .shop.sales-station.a1,.venue .shop.sales-station.c2{top:65%}
+.sales-station .station-art{display:block;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.sales-station .shop-hud{position:absolute;left:50%;bottom:calc(95% + 8px);transform:translateX(-50%);width:116px}
+.station-crew{position:absolute;left:22%;width:56%;display:flex;justify-content:center;pointer-events:none}
+.station-crew.crew-chef{top:38%}.station-crew.crew-sales{top:67%}
+.station-crew .staff-sprite{width:38%;height:auto;aspect-ratio:1;flex-shrink:1;filter:drop-shadow(0 1px 0 #fff8)}
+.crew-extra{font:800 10px system-ui;background:#172033;color:white;padding:2px;border-radius:4px}
+/* Keep the entire background and object coordinates aligned on narrow displays. */
+.venue{aspect-ratio:1672/941;min-height:0}
+@media(max-width:600px){.sales-station .shop-hud{width:88px}.venue{margin-top:32px}.venue .shop.sales-station{width:19%;top:7%}.venue .shop.sales-station.a1,.venue .shop.sales-station.c2{top:62%}}
+.mover,.mover .runner-person{width:64px;height:64px}
+.mover .runner-person{display:block;filter:drop-shadow(0 2px 1px #fff8)}
+.mover-name{position:absolute;left:50%;bottom:calc(100% - 5px);transform:translateX(-50%);font:800 11px/1.2 ui-monospace,monospace;color:#fff;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;background:#17324de8;border:1px solid #a7c7f1;border-radius:4px;padding:3px 5px;box-shadow:0 2px 4px #0004}
+.mover .mover-number{display:none}
+.mover .runner-label{top:61px}
+.mover-menu-avatar{height:76px}.mover-menu-avatar .staff-sprite{width:76px;height:76px}
+.mover-edit{width:100%;margin-top:8px;cursor:pointer;min-height:44px}
+.station-staff{border:1px solid #e5d7c3;border-radius:14px;padding:18px;margin-bottom:24px;background:linear-gradient(120deg,#fffaf0,#f6faf5)}
+.staff-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.staff-heading h3{font-size:24px;margin:6px 0}.staff-heading h3 span{color:#b7a791;padding:0 8px}
+.staff-heading .reset{margin:0;min-height:44px;cursor:pointer}
+.staff-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:14px}
+.staff-card{display:flex;align-items:center;gap:12px;border:1px solid #e4d9cc;border-radius:12px;background:white;padding:12px;color:var(--ink);text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.staff-card:hover{border-color:#d97706;box-shadow:0 3px 12px #a1620718}.staff-card-art{border-radius:10px;background:#f5eee4;padding:5px}
+.staff-card-info{display:grid;gap:4px;min-width:0}.staff-card-info strong{font-size:17px;overflow-wrap:anywhere}.staff-card-info small{font:700 11px ui-monospace,monospace;text-transform:uppercase;color:#64748b}.staff-card-info>span{font-size:12px;color:#a1440b;font-weight:700;margin-top:5px}
+.staff-empty{font-size:14px;color:#64748b;padding:8px 0}.staff-count{font-size:12px;color:#64748b}
+#team-dialog{width:min(680px,calc(100vw - 24px));max-height:88vh;overflow:auto}#team-title{padding-right:30px}
+.roster-group{margin-top:22px}.roster-group h3{font-size:15px;margin:0 0 8px}.roster-row{display:flex;align-items:center;gap:10px;border-top:1px solid #e8e0d5;padding:8px 0}.roster-row .staff-sprite{width:54px;height:54px}.roster-row>div{flex:1;min-width:0}.roster-row strong{display:block;overflow-wrap:anywhere}.roster-row small{display:block;color:#64748b;margin-top:3px}.roster-row .reset{margin:0;min-height:44px;cursor:pointer}
+#staff-dialog{max-height:90vh;overflow:auto}#staff-avatar{text-align:center}#staff-avatar .staff-sprite{width:96px;height:96px}#staff-title{text-align:center;margin-bottom:20px}#staff-form .hint{margin:16px 0;font-size:13px}#staff-save{cursor:pointer;min-height:44px}#staff-location-field[hidden]{display:none}
+@media(max-width:600px){.mover,.mover .runner-person{width:48px;height:48px}.mover-name{font-size:9px;max-width:95px;padding:2px 4px}.mover .runner-label{top:46px}.station-staff{padding:12px}.staff-heading{align-items:flex-start}.staff-heading h3{font-size:20px}.staff-cards{grid-template-columns:1fr}.roster-row{gap:6px}.roster-row .reset{font-size:11px;padding:6px}.roster-row small{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.staff-card{transition:none}}
