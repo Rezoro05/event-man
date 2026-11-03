@@ -235,7 +235,7 @@ async function receiveDelivery() {
     $('#confirm-delivery').disabled=!$('#receipt-check').checked;
   }
 }
-fill('#from',L);fill('#to',L);fill('#titem',M.map(x=>x[0]));$('#titem').value=M[0][0];
+fill('#from',L);fill('#to',L);$('#titem').value=M[0][0];
 $('#from').value='Backstock';
 $('#to').value='Atrium 1';
 $('#transferform').onsubmit=dispatchTransfer;
@@ -304,7 +304,15 @@ function runSimulationFrame(){
   localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();
   if(simulationIndex>=toastEvents.length){pauseSimulation();notify('Event simulation complete. All 480 transactions have been processed.');}
 }
-function startSimulation(){if(!toastEvents.length||simulationTimer)return;simulationTimer=setInterval(runSimulationFrame,250);updateSimulatorUi();runSimulationFrame()}
+function startSimulation(){
+  if(simulationTimer)return;
+  if(!toastEvents.length){
+    $('#sim-progress').textContent='Still loading transactions… please try again in a moment.';
+    loadToastMock();
+    return;
+  }
+  simulationTimer=setInterval(runSimulationFrame,250);updateSimulatorUi();runSimulationFrame();
+}
 function pauseSimulation(){if(simulationTimer){clearInterval(simulationTimer);simulationTimer=null}updateSimulatorUi()}
 function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
 function openSuggestion(item,from,to,qty){activeMover=null;$('#from').value=from;$('#to').value=to;$('#titem').value=item;$('#tqty').value=qty;updateAvailability();$('#transfer-dialog').showModal();}
@@ -328,7 +336,11 @@ async function loadToastMock(){
     const opening=Object.fromEntries(config.startingInventory.map(location=>[location.locationName,Object.fromEntries(location.items.map(item=>[item.itemId,item.startingQuantity]))]));
     M.splice(0,M.length,...config.products.map(product=>[product.name,product.price,L.map(location=>opening[location]?.[product.id]||0),product.category]));
     toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;
-    localStorage.setItem(key,JSON.stringify(D));fill('#titem',M.map(x=>x[0]));$('#titem').value=M[0][0];document.querySelector('.live').textContent='Toast · Simulator ready';render();updateSimulatorUi();
-  }catch(error){document.querySelector('.live').textContent='Toast · Mock feed unavailable';console.warn('Toast mock feed was not loaded.',error);}
+    localStorage.setItem(key,JSON.stringify(D));$('#titem').value=M[0][0];document.querySelector('.live').textContent='Toast · Simulator ready';render();updateSimulatorUi();
+  }catch(error){
+    document.querySelector('.live').textContent='Toast · Practice data unavailable';
+    const progress=$('#sim-progress');if(progress)progress.textContent='Could not load the practice transactions. Refresh the page and try again.';
+    console.warn('Toast mock feed was not loaded.',error);
+  }
 }
 if(document.head&&$('#kpis')&&typeof fetch==='function'){setupSimulatorUi();loadToastMock();}
