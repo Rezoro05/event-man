@@ -2,6 +2,7 @@
 const L=['Atrium 1','Atrium VIP','Cherry 1','Cherry 2','Backstock'],S=L.slice(0,4),M=[['Chicken Schnitzel Sandwich',13,[30,15,25,25,35],'Mains & snacks'],['Braised Bratwurst',10.5,[20,10,20,20,20],'Mains & snacks'],['Hot Dog',8.5,[25,10,25,25,35],'Mains & snacks'],['Warm Salted Pretzel VGO',8.5,[25,10,20,20,35],'Mains & snacks'],['Harvest Salad VG, AG',16,[10,8,10,10,12],'Mains & snacks'],['Sweet Pumpkin Loaf VG, AG',7.5,[15,8,15,15,17],'Mains & snacks'],['Hal’s Chips & Popcorn VG, AG',3.5,[15,8,15,15,27],'Mains & snacks'],['Assorted Snacks',4.5,[15,8,15,15,27],'Mains & snacks'],['Talea Al Dente Pilsner 12 oz',9.5,[20,10,20,20,30],'Beer & cider'],['Talea Basically Pumpkin Ale 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Grimm Ales Weisse Hefeweissbier 16 oz',11,[18,10,18,18,26],'Beer & cider'],['KCBC Zøktoberfest 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Hudson North Big Apple Dry Cider 12 oz',9.5,[18,10,18,18,26],'Beer & cider'],['Hudson North Apple Pie Cider 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Liquid Fables The Boy Who Cried Wolf Strawberry Mule',16.5,[15,8,15,15,22],'Beer & cider'],['Rain Brand Water 16 oz',4.5,[30,15,30,30,45],'Refreshments'],['Hal’s Seltzer 12 oz',4.25,[20,10,20,20,30],'Refreshments'],['Red Jacket Cider 12 oz',6,[18,10,18,18,26],'Refreshments'],['VIP Flight',0,[0,45,0,0,0],'VIP flight']],$=q=>document.querySelector(q),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),key='rezis-inventory-v1';
 let D=readState(),sel='Atrium 1',toastSummary=null,dashboardRevenueOverride=null;
 let toastEvents=[],simulationIndex=0,simulationClock=null,simulationSpeed=1,simulationTimer=null,suggestionMode=true;
+let locationRevenue={},simulationLog=[];
 const mi=i=>M.find(x=>x[0]===i),op=(i,l)=>mi(i)[2][L.indexOf(l)];
 const so=(i,l)=>D.sales.filter(x=>x.item===i&&x.location===l).reduce((a,x)=>a+x.qty,0);
 const st=(i,l)=>TransferLedger.stock(M,D,i,l);
@@ -12,7 +13,7 @@ const dollars=value=>Number(value).toLocaleString('en-US',{style:'currency',curr
 function shopStats(location){
   const report=toastSummary?.locations?.find(row=>row.locationName===location);
   const sold=tot(so,[location]);
-  const revenue=Number.isFinite(report?.revenue)?report.revenue:M.reduce((sum,[item,price])=>sum+price*so(item,location),0);
+  const revenue=dashboardRevenueOverride!==null?(locationRevenue[location]||0):Number.isFinite(report?.revenue)?report.revenue:M.reduce((sum,[item,price])=>sum+price*so(item,location),0);
   return {stock:tot(st,[location]),sold,revenue,estimated:!report&&sold>0&&location!=='Backstock'};
 }
 function stationArtwork(location){
@@ -67,8 +68,8 @@ function render(){
 }
 function detail(){
   const visible=x=>op(x[0],sel)>0||st(x[0],sel)!==0;
-  const cats=['Mains & snacks','Beer & cider','Refreshments','VIP flight'].filter(c=>M.some(x=>x[3]===c&&visible(x)));
-  $('#detail').innerHTML='<div class="detailtop"><div><div class="eyebrow">Selected point</div><h2>'+E(sel==='Backstock'?'Central warehouse':sel)+'</h2><p class="hint">Available quantities compared with opening stock.</p></div></div><div class="stock-legend"><span class="legend-low">Yellow · Low stock</span><span class="legend-critical">Red · Nearly out / empty</span></div><span class="mini">'+tot(st,[sel])+' AVAILABLE</span><span class="mini">'+tot(so,[sel])+' SOLD</span><div class="cats">'+cats.map(c=>'<article class="cat"><div class="photo" style="background-image:url('+(c==='Mains & snacks'?'assets/menu-food.png':'assets/menu-drinks.png')+')"></div><div class="ctitle">'+c+'</div><div class="lines">'+M.filter(x=>x[3]===c&&visible(x)).map(([i])=>{
+  const cats=[...new Set(M.filter(visible).map(x=>x[3]))];
+  $('#detail').innerHTML='<div class="detailtop"><div><div class="eyebrow">Selected point</div><h2>'+E(sel==='Backstock'?'Central warehouse':sel)+'</h2><p class="hint">Available quantities compared with opening stock.</p></div></div><div class="stock-legend"><span class="legend-low">Yellow · Low stock</span><span class="legend-critical">Red · Nearly out / empty</span></div><span class="mini">'+tot(st,[sel])+' AVAILABLE</span><span class="mini">'+tot(so,[sel])+' SOLD</span><div class="cats">'+cats.map(c=>'<article class="cat"><div class="photo" style="background-image:url('+(c==='Food'?'assets/menu-food.png':'assets/menu-drinks.png')+')"></div><div class="ctitle">'+E(c)+'</div><div class="lines">'+M.filter(x=>x[3]===c&&visible(x)).map(([i])=>{
     const n=st(i,sel),o=op(i,sel),q=status(i,sel);
     return '<div class="line inventory-item '+q+'"><div class="row"><span>'+E(i)+'</span><span class="nums">'+n+'/'+o+' · '+so(i,sel)+' sold</span></div>'+(q!=='ok'?'<span class="stock-status">'+healthText(q,n)+(n<0?' · Reconcile this item count':'')+'</span>':'')+'<div class="bar '+q+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div></div>';
   }).join('')+'</div></article>').join('')+'</div>';
@@ -274,27 +275,34 @@ render();
 function eventTime(order){return new Date(order.closedDate).getTime()}
 function formattedClock(){return simulationClock?new Date(simulationClock).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}):'11:00 AM'}
 function updateSimulatorUi(){
-  const start=$('#sim-start'),pause=$('#sim-pause'),reset=$('#sim-reset'),progress=$('#sim-progress'),clock=$('#sim-clock');
+  const start=$('#sim-start'),pause=$('#sim-pause'),reset=$('#sim-reset'),step=$('#sim-step'),progress=$('#sim-progress'),clock=$('#sim-clock'),state=$('#sim-state');
   if(!start) return;
   const done=toastEvents.length&&simulationIndex>=toastEvents.length;
   start.disabled=!toastEvents.length||!!simulationTimer||done;
   pause.disabled=!simulationTimer;
   reset.disabled=!toastEvents.length;
+  step.disabled=!toastEvents.length||!!simulationTimer||done;
   progress.textContent=toastEvents.length?simulationIndex+' / '+toastEvents.length+' transactions processed':'Loading transaction feed…';
   clock.textContent='Event time: '+formattedClock();
+  state.textContent=!toastEvents.length?'Loading practice data':done?'Scenario complete':simulationTimer?'Live simulation':'Ready to run';
+  state.className='sim-state '+(simulationTimer?'live':done?'complete':'ready');
+  renderSalesFeed();
 }
 function setupSimulatorUi(){
   if(!document.head||!$('#kpis'))return;
-  document.head.insertAdjacentHTML('beforeend','<style>.simulator{margin:0 0 16px;padding:16px 18px;border:1px solid #99f6e4;border-radius:18px;background:#ecfdf5;box-shadow:var(--shadow)}.simulator-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.simulator h2{margin:3px 0}.sim-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sim-controls button,.sim-controls select{width:auto;min-height:40px}.sim-controls button{padding:0 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#172033;font-weight:800}.sim-controls button.primary{background:#0f766e;color:#fff;border-color:#0f766e}.sim-controls button:disabled{opacity:.45}.sim-status{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0;color:#475569;font:800 11px ui-monospace,monospace}.suggestions{margin-top:13px;border-top:1px solid #b7e7db;padding-top:12px}.suggestions-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.suggestions h3{margin:0;font-size:15px}.suggestion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px;margin-top:9px}.suggestion{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:10px}.suggestion strong{display:block;font-size:13px}.suggestion p{margin:4px 0 8px;color:#526174;font-size:12px}.suggestion button{border:1px solid #0f766e;border-radius:7px;background:#fff;color:#0f766e;font-weight:800;padding:7px 9px}.mode-toggle{display:flex;align-items:center;gap:7px;font:700 12px/1.2 Inter,system-ui,sans-serif;color:#334155}.mode-toggle input{width:18px;min-height:18px}@media(max-width:600px){.simulator-top{display:block}.sim-controls{margin-top:12px}}</style>');
-  document.querySelector('#kpis').insertAdjacentHTML('beforebegin','<section class="simulator" aria-labelledby="sim-title"><div class="simulator-top"><div><div class="eyebrow">Practice mode</div><h2 id="sim-title">Live sales simulator</h2><p class="hint">Start the event and watch sales, stock, and logistics change in real time.</p></div><div class="sim-controls"><select id="sim-speed" aria-label="Simulation speed"><option value="0.25">Slow · ¼×</option><option value="1" selected>Normal · 1×</option><option value="5">Fast · 5×</option><option value="20">Very fast · 20×</option></select><button id="sim-start" class="primary" type="button">Start event</button><button id="sim-pause" type="button">Pause</button><button id="sim-reset" type="button">Reset</button></div></div><div class="sim-status"><span id="sim-clock">Event time: 11:00 AM</span><span id="sim-progress">Loading transaction feed…</span></div><section class="suggestions" aria-labelledby="suggestion-title"><div class="suggestions-head"><div><div class="eyebrow">Operations guide</div><h3 id="suggestion-title">Transfer suggestions</h3></div><label class="mode-toggle"><input id="suggestion-mode" type="checkbox" checked> Suggest transfers</label></div><div id="suggestion-list" class="suggestion-list"><p class="hint">Start the simulation to receive recommendations.</p></div></section></section>');
+  document.head.insertAdjacentHTML('beforeend','<style>.simulator{margin:0 0 16px;padding:18px;border:1px solid #99f6e4;border-radius:18px;background:#ecfdf5;box-shadow:var(--shadow)}.simulator-top{display:flex;justify-content:space-between;gap:16px;align-items:center}.simulator h2{margin:3px 0}.sim-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sim-controls button,.sim-controls select{width:auto;min-height:42px}.sim-controls button{padding:0 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#172033;font-weight:800;cursor:pointer}.sim-controls button.primary{background:#0f766e;color:#fff;border-color:#0f766e}.sim-controls button:disabled{opacity:.45;cursor:not-allowed}.sim-status{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 0;color:#475569;font:800 11px ui-monospace,monospace}.sim-status span{padding:7px 9px;border-radius:8px;background:#fff;border:1px solid #dceee8}.sim-state.live{color:#075c55;background:#d1fae5}.sim-state.complete{color:#1e40af;background:#dbeafe}.sim-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}.suggestions,.sale-feed{border:1px solid #b7e7db;border-radius:12px;padding:12px;background:#ffffffa8}.suggestions-head,.sale-feed-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.suggestions h3,.sale-feed h3{margin:0;font-size:15px}.suggestion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px;margin-top:9px}.suggestion{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:10px}.suggestion strong{display:block;font-size:13px}.suggestion p{margin:4px 0 8px;color:#526174;font-size:12px}.suggestion button{border:1px solid #0f766e;border-radius:7px;background:#fff;color:#0f766e;font-weight:800;padding:7px 9px;cursor:pointer}.mode-toggle{display:flex;align-items:center;gap:7px;font:700 12px/1.2 Inter,system-ui,sans-serif;color:#334155}.mode-toggle input{width:18px;min-height:18px}.sale-feed-list{display:grid;gap:7px;margin-top:9px}.sale-event{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:#fff;border-left:3px solid #0f766e;font-size:12px}.sale-event small{color:#526174}.sale-event strong{white-space:nowrap}.sale-event.comp{border-left-color:#9a3412}.sale-event.void{border-left-color:#b91c1c}@media(max-width:800px){.simulator-top,.sim-grid{display:block}.sim-controls{margin-top:12px}.sale-feed{margin-top:12px}}</style>');
+  document.querySelector('#kpis').insertAdjacentHTML('beforebegin','<section class="simulator" aria-labelledby="sim-title"><div class="simulator-top"><div><div class="eyebrow">Practice mode</div><h2 id="sim-title">Live sales simulator</h2><p class="hint">Run the event continuously or step through one transaction at a time.</p></div><div class="sim-controls"><select id="sim-speed" aria-label="Simulation speed"><option value="0.25">Slow · ¼×</option><option value="1" selected>Normal · 1×</option><option value="5">Fast · 5×</option><option value="20">Very fast · 20×</option></select><button id="sim-start" class="primary" type="button">Start event</button><button id="sim-pause" type="button">Pause</button><button id="sim-step" type="button">Step 1 sale</button><button id="sim-reset" type="button">Reset</button></div></div><div class="sim-status" aria-live="polite"><span id="sim-state" class="sim-state ready">Loading practice data</span><span id="sim-clock">Event time: 11:00 AM</span><span id="sim-progress">Loading transaction feed…</span></div><div class="sim-grid"><section class="suggestions" aria-labelledby="suggestion-title"><div class="suggestions-head"><div><div class="eyebrow">Operations guide</div><h3 id="suggestion-title">Transfer suggestions</h3></div><label class="mode-toggle"><input id="suggestion-mode" type="checkbox" checked> Suggest transfers</label></div><div id="suggestion-list" class="suggestion-list"><p class="hint">Start the simulation to receive recommendations.</p></div></section><section class="sale-feed" aria-labelledby="sale-feed-title"><div class="sale-feed-head"><div><div class="eyebrow">Live activity</div><h3 id="sale-feed-title">Latest transactions</h3></div></div><div id="sale-feed-list" class="sale-feed-list"><p class="hint">Transactions will appear here as the event begins.</p></div></section></div></section>');
   $('#sim-speed').onchange=e=>{simulationSpeed=Number(e.target.value)};
-  $('#sim-start').onclick=startSimulation; $('#sim-pause').onclick=pauseSimulation; $('#sim-reset').onclick=resetSimulation;
+  $('#sim-start').onclick=startSimulation; $('#sim-pause').onclick=pauseSimulation; $('#sim-step').onclick=stepSimulation; $('#sim-reset').onclick=resetSimulation;
   $('#suggestion-mode').onchange=e=>{suggestionMode=e.target.checked;renderSuggestions()};
 }
 function processOrder(order){
   const sales=order.checks.flatMap(check=>check.selections.filter(selection=>selection.reziDashboard.inventoryImpact>0).map(selection=>({item:selection.item.name,location:order.restaurant.name,qty:selection.reziDashboard.inventoryImpact,at:order.closedDate,orderId:order.guid})));
   D.sales.push(...sales);
   dashboardRevenueOverride=money2((dashboardRevenueOverride||0)+order.reziDashboard.recognizedRevenue);
+  locationRevenue[order.restaurant.name]=money2((locationRevenue[order.restaurant.name]||0)+order.reziDashboard.recognizedRevenue);
+  simulationLog.unshift({id:order.guid,location:order.restaurant.name,time:order.closedDate,revenue:order.reziDashboard.recognizedRevenue,status:order.reziDashboard.orderStatus,items:sales.map(s=>s.qty+' × '+s.item).join(', ')});
+  simulationLog=simulationLog.slice(0,5);
 }
 function money2(n){return Math.round(n*100)/100}
 function runSimulationFrame(){
@@ -313,18 +321,29 @@ function startSimulation(){
   }
   simulationTimer=setInterval(runSimulationFrame,250);updateSimulatorUi();runSimulationFrame();
 }
+function stepSimulation(){
+  if(!toastEvents.length||simulationTimer||simulationIndex>=toastEvents.length)return;
+  const order=toastEvents[simulationIndex++];simulationClock=eventTime(order);processOrder(order);
+  localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();
+  if(simulationIndex>=toastEvents.length)notify('Event simulation complete. All 480 transactions have been processed.');
+}
 function pauseSimulation(){if(simulationTimer){clearInterval(simulationTimer);simulationTimer=null}updateSimulatorUi()}
-function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
+function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
 function openSuggestion(item,from,to,qty){activeMover=null;$('#from').value=from;$('#to').value=to;$('#titem').value=item;$('#tqty').value=qty;updateAvailability();$('#transfer-dialog').showModal();}
 function renderSuggestions(){
   const host=$('#suggestion-list');if(!host)return;
   if(!suggestionMode){host.innerHTML='<p class="hint">Suggestion mode is paused. You can still make transfers manually.</p>';return}
   if(!D.sales.length){host.innerHTML='<p class="hint">Recommendations appear as sales move inventory toward low-stock levels.</p>';return}
   const candidates=[];
-  S.forEach(to=>M.forEach(([item,,stock])=>{const opening=stock[L.indexOf(to)],left=st(item,to);if(!opening||left>Math.max(4,Math.ceil(opening*.2)))return;const from=S.filter(place=>place!==to).map(place=>({place,left:st(item,place)})).filter(x=>x.left>Math.max(6,Math.ceil(opening*.3))).sort((a,b)=>b.left-a.left)[0];if(from){const qty=Math.min(Math.max(1,Math.ceil(opening*.35)-left),Math.max(1,Math.floor(from.left*.25)));candidates.push({item,from:from.place,to,qty,left})}}));
+  S.forEach(to=>M.forEach(([item,,stock])=>{const opening=stock[L.indexOf(to)],left=st(item,to),ratio=left/opening;if(!opening||ratio>.2)return;const from=S.filter(place=>place!==to).map(place=>({place,left:st(item,place)})).filter(x=>x.left>Math.max(6,Math.ceil(opening*.3))).sort((a,b)=>b.left-a.left)[0];if(from){const qty=Math.min(Math.max(1,Math.ceil(opening*.4)-left),Math.max(1,Math.floor(from.left*.25)));candidates.push({item,from:from.place,to,qty,left,urgent:ratio<=.1})}}));
   const shown=candidates.sort((a,b)=>a.left-b.left).slice(0,3);
-  host.innerHTML=shown.length?shown.map(x=>'<article class="suggestion"><strong>Move '+x.qty+' × '+E(x.item)+'</strong><p>'+E(x.to)+' has '+x.left+' left. '+E(x.from)+' can spare stock.</p><button type="button" data-suggest-item="'+E(x.item)+'" data-suggest-from="'+E(x.from)+'" data-suggest-to="'+E(x.to)+'" data-suggest-qty="'+x.qty+'">Prepare transfer</button></article>').join(''):'<p class="hint">Inventory is balanced. No transfer is suggested right now.</p>';
+  host.innerHTML=shown.length?shown.map(x=>'<article class="suggestion"><strong>'+(x.urgent?'Urgent · ':'')+'Move '+x.qty+' × '+E(x.item)+'</strong><p>'+E(x.to)+' has '+x.left+' left. '+E(x.from)+' can spare stock without creating a low-stock alert.</p><button type="button" data-suggest-item="'+E(x.item)+'" data-suggest-from="'+E(x.from)+'" data-suggest-to="'+E(x.to)+'" data-suggest-qty="'+x.qty+'">Prepare transfer</button></article>').join(''):'<p class="hint">Inventory is balanced. No transfer is suggested right now.</p>';
   if(host.querySelectorAll)host.querySelectorAll('[data-suggest-item]').forEach(button=>button.onclick=()=>openSuggestion(button.dataset.suggestItem,button.dataset.suggestFrom,button.dataset.suggestTo,Number(button.dataset.suggestQty)));
+}
+function renderSalesFeed(){
+  const host=$('#sale-feed-list');if(!host)return;
+  if(!simulationLog.length){host.innerHTML='<p class="hint">Transactions will appear here as the event begins.</p>';return}
+  host.innerHTML=simulationLog.map(entry=>'<article class="sale-event '+(entry.status==='VOIDED'?'void':entry.status==='COMPED'?'comp':'')+'"><div><strong>'+E(entry.location)+'</strong><small>'+E(entry.items||entry.status.toLowerCase())+' · '+new Date(entry.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})+'</small></div><strong>'+dollars(entry.revenue)+'</strong></article>').join('');
 }
 // This loader reads the normalized fields that a future Toast webhook adapter will write.
 async function loadToastMock(){
@@ -335,7 +354,7 @@ async function loadToastMock(){
     const [config,feed,summary]=await Promise.all([configResponse.json(),feedResponse.json(),summaryResponse.json()]);
     const opening=Object.fromEntries(config.startingInventory.map(location=>[location.locationName,Object.fromEntries(location.items.map(item=>[item.itemId,item.startingQuantity]))]));
     M.splice(0,M.length,...config.products.map(product=>[product.name,product.price,L.map(location=>opening[location]?.[product.id]||0),product.category]));
-    toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;
+    toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];
     localStorage.setItem(key,JSON.stringify(D));$('#titem').value=M[0][0];document.querySelector('.live').textContent='Toast · Simulator ready';render();updateSimulatorUi();
   }catch(error){
     document.querySelector('.live').textContent='Toast · Practice data unavailable';
