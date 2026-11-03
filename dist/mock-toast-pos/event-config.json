@@ -1,0 +1,324 @@
+{
+  "event": {
+    "schemaVersion": "rezi.toast.mock.v1",
+    "source": "toast",
+    "environment": "mock",
+    "eventId": "REZI-EVT-2026-10-27",
+    "eventName": "Rezi Wine Event",
+    "timezone": "America/New_York",
+    "startsAt": "2026-10-27T11:00:00-04:00",
+    "endsAt": "2026-10-27T16:30:00-04:00",
+    "estimatedGuests": 500,
+    "integrationContract": {
+      "eventEnvelope": "Toast-like order webhook",
+      "identityKey": "guid",
+      "timeKey": "closedDate",
+      "locationKey": "restaurant.guid",
+      "deviceKey": "device.guid",
+      "lineItemsKey": "checks[].selections[]",
+      "note": "Map real Toast webhook fields into this envelope; dashboard only reads normalized reziDashboard fields."
+    }
+  },
+  "locations": [
+    {
+      "id": "LOC-ATRIUM-1",
+      "name": "Atrium 1",
+      "devices": [
+        "TOAST-ATR-001",
+        "TOAST-ATR-002"
+      ],
+      "orderWeight": 30
+    },
+    {
+      "id": "LOC-ATRIUM-VIP",
+      "name": "Atrium VIP",
+      "devices": [
+        "TOAST-VIP-001",
+        "TOAST-VIP-002"
+      ],
+      "orderWeight": 16
+    },
+    {
+      "id": "LOC-CHERRY-1",
+      "name": "Cherry 1",
+      "devices": [
+        "TOAST-CH1-001",
+        "TOAST-CH1-002"
+      ],
+      "orderWeight": 28
+    },
+    {
+      "id": "LOC-CHERRY-2",
+      "name": "Cherry 2",
+      "devices": [
+        "TOAST-CH2-001",
+        "TOAST-CH2-002"
+      ],
+      "orderWeight": 26
+    }
+  ],
+  "products": [
+    {
+      "id": "ITEM-CHARD",
+      "name": "Chardonnay",
+      "category": "Wine",
+      "price": 85.3,
+      "stock": 40
+    },
+    {
+      "id": "ITEM-CAB",
+      "name": "Cabernet Sauvignon",
+      "category": "Wine",
+      "price": 97.49,
+      "stock": 42
+    },
+    {
+      "id": "ITEM-ROSE",
+      "name": "Rosé",
+      "category": "Wine",
+      "price": 79.21,
+      "stock": 36
+    },
+    {
+      "id": "ITEM-PINOT",
+      "name": "Pinot Noir",
+      "category": "Wine",
+      "price": 91.4,
+      "stock": 36
+    },
+    {
+      "id": "ITEM-BEER",
+      "name": "Craft Lager",
+      "category": "Beer",
+      "price": 54.84,
+      "stock": 30
+    },
+    {
+      "id": "ITEM-WATER",
+      "name": "Sparkling Water",
+      "category": "Non-Alcoholic",
+      "price": 30.47,
+      "stock": 40
+    },
+    {
+      "id": "ITEM-CHARCUTERIE",
+      "name": "Charcuterie Cup",
+      "category": "Food",
+      "price": 73.12,
+      "stock": 30
+    },
+    {
+      "id": "ITEM-FLIGHT",
+      "name": "VIP Wine Flight",
+      "category": "Wine Flight",
+      "price": 194.98,
+      "stock": 95,
+      "vipOnly": true
+    }
+  ],
+  "deviceToLocation": {
+    "TOAST-ATR-001": {
+      "locationId": "LOC-ATRIUM-1",
+      "locationName": "Atrium 1"
+    },
+    "TOAST-ATR-002": {
+      "locationId": "LOC-ATRIUM-1",
+      "locationName": "Atrium 1"
+    },
+    "TOAST-VIP-001": {
+      "locationId": "LOC-ATRIUM-VIP",
+      "locationName": "Atrium VIP"
+    },
+    "TOAST-VIP-002": {
+      "locationId": "LOC-ATRIUM-VIP",
+      "locationName": "Atrium VIP"
+    },
+    "TOAST-CH1-001": {
+      "locationId": "LOC-CHERRY-1",
+      "locationName": "Cherry 1"
+    },
+    "TOAST-CH1-002": {
+      "locationId": "LOC-CHERRY-1",
+      "locationName": "Cherry 1"
+    },
+    "TOAST-CH2-001": {
+      "locationId": "LOC-CHERRY-2",
+      "locationName": "Cherry 2"
+    },
+    "TOAST-CH2-002": {
+      "locationId": "LOC-CHERRY-2",
+      "locationName": "Cherry 2"
+    }
+  },
+  "startingInventory": [
+    {
+      "locationId": "LOC-ATRIUM-1",
+      "locationName": "Atrium 1",
+      "items": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "startingQuantity": 42
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "startingQuantity": 30
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-ATRIUM-VIP",
+      "locationName": "Atrium VIP",
+      "items": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "startingQuantity": 42
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-FLIGHT",
+          "name": "VIP Wine Flight",
+          "startingQuantity": 95
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-CHERRY-1",
+      "locationName": "Cherry 1",
+      "items": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "startingQuantity": 42
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "startingQuantity": 30
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-CHERRY-2",
+      "locationName": "Cherry 2",
+      "items": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "startingQuantity": 42
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "startingQuantity": 36
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "startingQuantity": 40
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "startingQuantity": 30
+        }
+      ]
+    }
+  ]
+}

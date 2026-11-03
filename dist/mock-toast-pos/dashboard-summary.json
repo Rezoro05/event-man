@@ -1,0 +1,290 @@
+{
+  "schemaVersion": "rezi.dashboard.summary.v1",
+  "generatedFrom": "toast-webhook-events.json",
+  "event": {
+    "schemaVersion": "rezi.toast.mock.v1",
+    "source": "toast",
+    "environment": "mock",
+    "eventId": "REZI-EVT-2026-10-27",
+    "eventName": "Rezi Wine Event",
+    "timezone": "America/New_York",
+    "startsAt": "2026-10-27T11:00:00-04:00",
+    "endsAt": "2026-10-27T16:30:00-04:00",
+    "estimatedGuests": 500,
+    "integrationContract": {
+      "eventEnvelope": "Toast-like order webhook",
+      "identityKey": "guid",
+      "timeKey": "closedDate",
+      "locationKey": "restaurant.guid",
+      "deviceKey": "device.guid",
+      "lineItemsKey": "checks[].selections[]",
+      "note": "Map real Toast webhook fields into this envelope; dashboard only reads normalized reziDashboard fields."
+    }
+  },
+  "totals": {
+    "orders": 480,
+    "closedOrders": 441,
+    "voidedOrders": 25,
+    "compedOrders": 14,
+    "revenue": 59000,
+    "unitsSold": 739,
+    "guestsPerOrder": 1.04
+  },
+  "locations": [
+    {
+      "locationId": "LOC-ATRIUM-1",
+      "locationName": "Atrium 1",
+      "orders": 135,
+      "revenue": 16662.22,
+      "unitsSold": 215,
+      "sellThrough": 84.65,
+      "averageOrderValue": 134.37,
+      "inventoryRemaining": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "quantity": 17
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "quantity": 11
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "quantity": 0
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "quantity": 3
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "quantity": 0
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "quantity": 8
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-ATRIUM-VIP",
+      "locationName": "Atrium VIP",
+      "orders": 77,
+      "revenue": 11735.33,
+      "unitsSold": 117,
+      "sellThrough": 33.52,
+      "averageOrderValue": 162.99,
+      "inventoryRemaining": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "quantity": 23
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "quantity": 25
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "quantity": 17
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "quantity": 23
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "quantity": 22
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "quantity": 25
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "quantity": 21
+        },
+        {
+          "itemId": "ITEM-FLIGHT",
+          "name": "VIP Wine Flight",
+          "quantity": 76
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-CHERRY-1",
+      "locationName": "Cherry 1",
+      "orders": 123,
+      "revenue": 13725.67,
+      "unitsSold": 188,
+      "sellThrough": 74.02,
+      "averageOrderValue": 122.55,
+      "inventoryRemaining": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "quantity": 13
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "quantity": 13
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "quantity": 6
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "quantity": 15
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "quantity": 4
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "quantity": 10
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "locationId": "LOC-CHERRY-2",
+      "locationName": "Cherry 2",
+      "orders": 145,
+      "revenue": 16876.78,
+      "unitsSold": 219,
+      "sellThrough": 86.22,
+      "averageOrderValue": 126.89,
+      "inventoryRemaining": [
+        {
+          "itemId": "ITEM-CHARD",
+          "name": "Chardonnay",
+          "quantity": 4
+        },
+        {
+          "itemId": "ITEM-CAB",
+          "name": "Cabernet Sauvignon",
+          "quantity": 11
+        },
+        {
+          "itemId": "ITEM-ROSE",
+          "name": "Rosé",
+          "quantity": 15
+        },
+        {
+          "itemId": "ITEM-PINOT",
+          "name": "Pinot Noir",
+          "quantity": 2
+        },
+        {
+          "itemId": "ITEM-BEER",
+          "name": "Craft Lager",
+          "quantity": 0
+        },
+        {
+          "itemId": "ITEM-WATER",
+          "name": "Sparkling Water",
+          "quantity": 0
+        },
+        {
+          "itemId": "ITEM-CHARCUTERIE",
+          "name": "Charcuterie Cup",
+          "quantity": 3
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "itemId": "ITEM-CHARD",
+      "name": "Chardonnay",
+      "startingInventory": 160,
+      "unitsSold": 103,
+      "inventoryRemaining": 57,
+      "sellThrough": 64.38
+    },
+    {
+      "itemId": "ITEM-CAB",
+      "name": "Cabernet Sauvignon",
+      "startingInventory": 168,
+      "unitsSold": 108,
+      "inventoryRemaining": 60,
+      "sellThrough": 64.29
+    },
+    {
+      "itemId": "ITEM-ROSE",
+      "name": "Rosé",
+      "startingInventory": 144,
+      "unitsSold": 106,
+      "inventoryRemaining": 38,
+      "sellThrough": 73.61
+    },
+    {
+      "itemId": "ITEM-PINOT",
+      "name": "Pinot Noir",
+      "startingInventory": 144,
+      "unitsSold": 101,
+      "inventoryRemaining": 43,
+      "sellThrough": 70.14
+    },
+    {
+      "itemId": "ITEM-BEER",
+      "name": "Craft Lager",
+      "startingInventory": 120,
+      "unitsSold": 94,
+      "inventoryRemaining": 26,
+      "sellThrough": 78.33
+    },
+    {
+      "itemId": "ITEM-WATER",
+      "name": "Sparkling Water",
+      "startingInventory": 160,
+      "unitsSold": 117,
+      "inventoryRemaining": 43,
+      "sellThrough": 73.13
+    },
+    {
+      "itemId": "ITEM-CHARCUTERIE",
+      "name": "Charcuterie Cup",
+      "startingInventory": 120,
+      "unitsSold": 91,
+      "inventoryRemaining": 29,
+      "sellThrough": 75.83
+    },
+    {
+      "itemId": "ITEM-FLIGHT",
+      "name": "VIP Wine Flight",
+      "startingInventory": 95,
+      "unitsSold": 19,
+      "inventoryRemaining": 76,
+      "sellThrough": 20
+    }
+  ]
+}

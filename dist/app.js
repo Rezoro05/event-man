@@ -1,6 +1,7 @@
 
 const L=['Atrium 1','Atrium VIP','Cherry 1','Cherry 2','Backstock'],S=L.slice(0,4),M=[['Chicken Schnitzel Sandwich',13,[30,15,25,25,35],'Mains & snacks'],['Braised Bratwurst',10.5,[20,10,20,20,20],'Mains & snacks'],['Hot Dog',8.5,[25,10,25,25,35],'Mains & snacks'],['Warm Salted Pretzel VGO',8.5,[25,10,20,20,35],'Mains & snacks'],['Harvest Salad VG, AG',16,[10,8,10,10,12],'Mains & snacks'],['Sweet Pumpkin Loaf VG, AG',7.5,[15,8,15,15,17],'Mains & snacks'],['Hal’s Chips & Popcorn VG, AG',3.5,[15,8,15,15,27],'Mains & snacks'],['Assorted Snacks',4.5,[15,8,15,15,27],'Mains & snacks'],['Talea Al Dente Pilsner 12 oz',9.5,[20,10,20,20,30],'Beer & cider'],['Talea Basically Pumpkin Ale 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Grimm Ales Weisse Hefeweissbier 16 oz',11,[18,10,18,18,26],'Beer & cider'],['KCBC Zøktoberfest 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Hudson North Big Apple Dry Cider 12 oz',9.5,[18,10,18,18,26],'Beer & cider'],['Hudson North Apple Pie Cider 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Liquid Fables The Boy Who Cried Wolf Strawberry Mule',16.5,[15,8,15,15,22],'Beer & cider'],['Rain Brand Water 16 oz',4.5,[30,15,30,30,45],'Refreshments'],['Hal’s Seltzer 12 oz',4.25,[20,10,20,20,30],'Refreshments'],['Red Jacket Cider 12 oz',6,[18,10,18,18,26],'Refreshments'],['VIP Flight',0,[0,45,0,0,0],'VIP flight']],$=q=>document.querySelector(q),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),key='rezis-inventory-v1';
-let D=readState(),sel='Atrium 1',toastSummary=null;
+let D=readState(),sel='Atrium 1',toastSummary=null,dashboardRevenueOverride=null;
+let toastEvents=[],simulationIndex=0,simulationClock=null,simulationSpeed=1,simulationTimer=null,suggestionMode=true;
 const mi=i=>M.find(x=>x[0]===i),op=(i,l)=>mi(i)[2][L.indexOf(l)];
 const so=(i,l)=>D.sales.filter(x=>x.item===i&&x.location===l).reduce((a,x)=>a+x.qty,0);
 const st=(i,l)=>TransferLedger.stock(M,D,i,l);
@@ -37,7 +38,7 @@ function selectShop(button,event){
 function render(){
   const issues=[];
   S.forEach(l=>M.forEach(([i])=>{if(op(i,l)&&status(i,l)!=='ok')issues.push({i,l,s:status(i,l),n:st(i,l)})}));
-  const revenue=toastSummary ? toastSummary.totals.revenue : M.reduce((a,[i,p])=>a+p*S.reduce((b,l)=>b+so(i,l),0),0);
+  const revenue=dashboardRevenueOverride!==null ? dashboardRevenueOverride : toastSummary ? toastSummary.totals.revenue : M.reduce((a,[i,p])=>a+p*S.reduce((b,l)=>b+so(i,l),0),0);
   const kpis=[['Sales revenue','$'+revenue.toFixed(0)],['Units sold',tot(so)],['Available · shops',tot(st)],['Backstock',tot(st,['Backstock'])],['Refill signals',issues.length],['Stockouts',issues.filter(x=>x.s==='out').length],['In transit',D.transfers.filter(TransferLedger.inTransit).reduce((n,t)=>n+t.qty,0)]];
   $('#kpis').innerHTML=kpis.map(([label,value],i)=>'<div class="kpi '+((i===4||i===5)&&value?'alert':'')+'"><small>'+label+'</small><strong>'+value+'</strong></div>').join('');
   $('#notices').innerHTML=issues.length?issues.slice(0,3).map(x=>'<span class="notice '+x.s+'">'+E(x.i)+' · '+E(x.l)+' · '+healthText(x.s,x.n)+'</span>').join(''):'<span class="notice ok">✓ No refill signals</span>';
@@ -62,6 +63,7 @@ function render(){
   const max=Math.max(...S.map(l=>tot(st,[l])),1);
   $('#bars').innerHTML=S.map(l=>'<div class="line"><div class="row"><span>'+l+'</span><span class="nums">'+tot(st,[l])+' units</span></div><div class="bar"><i style="width:'+Math.max(0,tot(st,[l])/max*100)+'%"></i></div></div>').join('');
   if(typeof renderHistory==='function')renderHistory();
+  renderSuggestions();
 }
 function detail(){
   const visible=x=>op(x[0],sel)>0||st(x[0],sel)!==0;
@@ -269,38 +271,64 @@ async function assignTransporter(id){
 }
 render();
 
-// This loader reads the normalized fields that a future Toast webhook adapter
-// will write, keeping the dashboard code independent of its source.
+function eventTime(order){return new Date(order.closedDate).getTime()}
+function formattedClock(){return simulationClock?new Date(simulationClock).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}):'11:00 AM'}
+function updateSimulatorUi(){
+  const start=$('#sim-start'),pause=$('#sim-pause'),reset=$('#sim-reset'),progress=$('#sim-progress'),clock=$('#sim-clock');
+  if(!start) return;
+  const done=toastEvents.length&&simulationIndex>=toastEvents.length;
+  start.disabled=!toastEvents.length||!!simulationTimer||done;
+  pause.disabled=!simulationTimer;
+  reset.disabled=!toastEvents.length;
+  progress.textContent=toastEvents.length?simulationIndex+' / '+toastEvents.length+' transactions processed':'Loading transaction feed…';
+  clock.textContent='Event time: '+formattedClock();
+}
+function setupSimulatorUi(){
+  if(!document.head||!$('#kpis'))return;
+  document.head.insertAdjacentHTML('beforeend','<style>.simulator{margin:0 0 16px;padding:16px 18px;border:1px solid #99f6e4;border-radius:18px;background:#ecfdf5;box-shadow:var(--shadow)}.simulator-top{display:flex;justify-content:space-between;gap:12px;align-items:center}.simulator h2{margin:3px 0}.sim-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sim-controls button,.sim-controls select{width:auto;min-height:40px}.sim-controls button{padding:0 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#172033;font-weight:800}.sim-controls button.primary{background:#0f766e;color:#fff;border-color:#0f766e}.sim-controls button:disabled{opacity:.45}.sim-status{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0;color:#475569;font:800 11px ui-monospace,monospace}.suggestions{margin-top:13px;border-top:1px solid #b7e7db;padding-top:12px}.suggestions-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.suggestions h3{margin:0;font-size:15px}.suggestion-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:9px;margin-top:9px}.suggestion{background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:10px}.suggestion strong{display:block;font-size:13px}.suggestion p{margin:4px 0 8px;color:#526174;font-size:12px}.suggestion button{border:1px solid #0f766e;border-radius:7px;background:#fff;color:#0f766e;font-weight:800;padding:7px 9px}.mode-toggle{display:flex;align-items:center;gap:7px;font:700 12px/1.2 Inter,system-ui,sans-serif;color:#334155}.mode-toggle input{width:18px;min-height:18px}@media(max-width:600px){.simulator-top{display:block}.sim-controls{margin-top:12px}}</style>');
+  document.querySelector('#kpis').insertAdjacentHTML('beforebegin','<section class="simulator" aria-labelledby="sim-title"><div class="simulator-top"><div><div class="eyebrow">Practice mode</div><h2 id="sim-title">Live sales simulator</h2><p class="hint">Start the event and watch sales, stock, and logistics change in real time.</p></div><div class="sim-controls"><select id="sim-speed" aria-label="Simulation speed"><option value="0.25">Slow · ¼×</option><option value="1" selected>Normal · 1×</option><option value="5">Fast · 5×</option><option value="20">Very fast · 20×</option></select><button id="sim-start" class="primary" type="button">Start event</button><button id="sim-pause" type="button">Pause</button><button id="sim-reset" type="button">Reset</button></div></div><div class="sim-status"><span id="sim-clock">Event time: 11:00 AM</span><span id="sim-progress">Loading transaction feed…</span></div><section class="suggestions" aria-labelledby="suggestion-title"><div class="suggestions-head"><div><div class="eyebrow">Operations guide</div><h3 id="suggestion-title">Transfer suggestions</h3></div><label class="mode-toggle"><input id="suggestion-mode" type="checkbox" checked> Suggest transfers</label></div><div id="suggestion-list" class="suggestion-list"><p class="hint">Start the simulation to receive recommendations.</p></div></section></section>');
+  $('#sim-speed').onchange=e=>{simulationSpeed=Number(e.target.value)};
+  $('#sim-start').onclick=startSimulation; $('#sim-pause').onclick=pauseSimulation; $('#sim-reset').onclick=resetSimulation;
+  $('#suggestion-mode').onchange=e=>{suggestionMode=e.target.checked;renderSuggestions()};
+}
+function processOrder(order){
+  const sales=order.checks.flatMap(check=>check.selections.filter(selection=>selection.reziDashboard.inventoryImpact>0).map(selection=>({item:selection.item.name,location:order.restaurant.name,qty:selection.reziDashboard.inventoryImpact,at:order.closedDate,orderId:order.guid})));
+  D.sales.push(...sales);
+  dashboardRevenueOverride=money2((dashboardRevenueOverride||0)+order.reziDashboard.recognizedRevenue);
+}
+function money2(n){return Math.round(n*100)/100}
+function runSimulationFrame(){
+  if(!simulationClock||simulationIndex>=toastEvents.length){pauseSimulation();return}
+  simulationClock+=simulationSpeed*15000;
+  while(simulationIndex<toastEvents.length&&eventTime(toastEvents[simulationIndex])<=simulationClock){processOrder(toastEvents[simulationIndex++])}
+  localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();
+  if(simulationIndex>=toastEvents.length){pauseSimulation();notify('Event simulation complete. All 480 transactions have been processed.');}
+}
+function startSimulation(){if(!toastEvents.length||simulationTimer)return;simulationTimer=setInterval(runSimulationFrame,250);updateSimulatorUi();runSimulationFrame()}
+function pauseSimulation(){if(simulationTimer){clearInterval(simulationTimer);simulationTimer=null}updateSimulatorUi()}
+function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
+function openSuggestion(item,from,to,qty){activeMover=null;$('#from').value=from;$('#to').value=to;$('#titem').value=item;$('#tqty').value=qty;updateAvailability();$('#transfer-dialog').showModal();}
+function renderSuggestions(){
+  const host=$('#suggestion-list');if(!host)return;
+  if(!suggestionMode){host.innerHTML='<p class="hint">Suggestion mode is paused. You can still make transfers manually.</p>';return}
+  if(!D.sales.length){host.innerHTML='<p class="hint">Recommendations appear as sales move inventory toward low-stock levels.</p>';return}
+  const candidates=[];
+  S.forEach(to=>M.forEach(([item,,stock])=>{const opening=stock[L.indexOf(to)],left=st(item,to);if(!opening||left>Math.max(4,Math.ceil(opening*.2)))return;const from=S.filter(place=>place!==to).map(place=>({place,left:st(item,place)})).filter(x=>x.left>Math.max(6,Math.ceil(opening*.3))).sort((a,b)=>b.left-a.left)[0];if(from){const qty=Math.min(Math.max(1,Math.ceil(opening*.35)-left),Math.max(1,Math.floor(from.left*.25)));candidates.push({item,from:from.place,to,qty,left})}}));
+  const shown=candidates.sort((a,b)=>a.left-b.left).slice(0,3);
+  host.innerHTML=shown.length?shown.map(x=>'<article class="suggestion"><strong>Move '+x.qty+' × '+E(x.item)+'</strong><p>'+E(x.to)+' has '+x.left+' left. '+E(x.from)+' can spare stock.</p><button type="button" data-suggest-item="'+E(x.item)+'" data-suggest-from="'+E(x.from)+'" data-suggest-to="'+E(x.to)+'" data-suggest-qty="'+x.qty+'">Prepare transfer</button></article>').join(''):'<p class="hint">Inventory is balanced. No transfer is suggested right now.</p>';
+  if(host.querySelectorAll)host.querySelectorAll('[data-suggest-item]').forEach(button=>button.onclick=()=>openSuggestion(button.dataset.suggestItem,button.dataset.suggestFrom,button.dataset.suggestTo,Number(button.dataset.suggestQty)));
+}
+// This loader reads the normalized fields that a future Toast webhook adapter will write.
 async function loadToastMock(){
   try {
-    const base='../../mock-toast-pos/';
-    const [configResponse,feedResponse,summaryResponse]=await Promise.all([
-      fetch(base+'event-config.json'),fetch(base+'toast-webhook-events.json'),fetch(base+'dashboard-summary.json')
-    ]);
-    if(!configResponse.ok||!feedResponse.ok||!summaryResponse.ok) throw new Error('Mock data is unavailable.');
+    const base='mock-toast-pos/';
+    const [configResponse,feedResponse,summaryResponse]=await Promise.all([fetch(base+'event-config.json'),fetch(base+'toast-webhook-events.json'),fetch(base+'dashboard-summary.json')]);
+    if(!configResponse.ok||!feedResponse.ok||!summaryResponse.ok)throw new Error('Mock data is unavailable.');
     const [config,feed,summary]=await Promise.all([configResponse.json(),feedResponse.json(),summaryResponse.json()]);
-    const opening=Object.fromEntries(config.startingInventory.map(location=>[
-      location.locationName,Object.fromEntries(location.items.map(item=>[item.itemId,item.startingQuantity]))
-    ]));
-    const menu=config.products.map(product=>[
-      product.name,product.price,L.map(location=>opening[location]?.[product.id]||0),product.category
-    ]);
-    const sales=feed.events.flatMap(order=>order.checks.flatMap(check=>check.selections
-      .filter(selection=>selection.reziDashboard.inventoryImpact>0)
-      .map(selection=>({item:selection.item.name,location:order.restaurant.name,qty:selection.reziDashboard.inventoryImpact,at:order.closedDate,orderId:order.guid}))
-    ));
-    const prior=readState();
-    M.splice(0,M.length,...menu);
-    D={sales,transfers:prior.transfers||[]};
-    toastSummary=summary;
-    localStorage.setItem(key,JSON.stringify(D));
-    fill('#titem',M.map(x=>x[0]));
-    $('#titem').value=M[0][0];
-    document.querySelector('.live').textContent='Toast · Mock feed connected';
-    render();
-  } catch (error) {
-    document.querySelector('.live').textContent='Toast · Mock feed unavailable';
-    console.warn('Toast mock feed was not loaded.',error);
-  }
+    const opening=Object.fromEntries(config.startingInventory.map(location=>[location.locationName,Object.fromEntries(location.items.map(item=>[item.itemId,item.startingQuantity]))]));
+    M.splice(0,M.length,...config.products.map(product=>[product.name,product.price,L.map(location=>opening[location]?.[product.id]||0),product.category]));
+    toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;
+    localStorage.setItem(key,JSON.stringify(D));fill('#titem',M.map(x=>x[0]));$('#titem').value=M[0][0];document.querySelector('.live').textContent='Toast · Simulator ready';render();updateSimulatorUi();
+  }catch(error){document.querySelector('.live').textContent='Toast · Mock feed unavailable';console.warn('Toast mock feed was not loaded.',error);}
 }
-loadToastMock();
+if(document.head&&$('#kpis')&&typeof fetch==='function'){setupSimulatorUi();loadToastMock();}

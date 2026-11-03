@@ -32,7 +32,7 @@
     if (!locations.includes(from) || !locations.includes(to)) return {ok:false,error:'Choose both locations.'};
     if (from === to) return {ok:false,error:'Choose a destination different from the source.'};
     if (!Number.isSafeInteger(qty) || qty <= 0) return {ok:false,error:'Enter a whole number greater than zero.'};
-    if (item === 'VIP Flight' && !['Atrium VIP','Backstock'].includes(to)) return {ok:false,error:'VIP Flight can only be stocked at Atrium VIP or central Backstock.'};
+    if (['VIP Flight','VIP Wine Flight'].includes(item) && !['Atrium VIP','Backstock'].includes(to)) return {ok:false,error:'VIP Wine Flight can only be stocked at Atrium VIP or central Backstock.'};
     if (!id || state.transfers.some(t => t.id === id)) return {ok:false,error:'This transfer has already been initiated.'};
     const available = stock(menu,state,item,from);
     if (qty > available) return {ok:false,error:'Only '+Math.max(0,available)+' units of '+item+' are available at '+from+'. Enter a quantity within available stock.'};
