@@ -14,7 +14,7 @@
 .shop:hover,.shop.active{box-shadow:none;border:0}
 .sales-station::before,.warehouse::before{content:"";position:absolute;z-index:-1;inset:-10px;border:2px dashed transparent;border-radius:16px;background:#14b8a600;box-shadow:0 0 0 0 #14b8a600;pointer-events:none;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}
 .sales-station:hover::before,.sales-station:focus-visible::before,.warehouse:hover::before,.warehouse:focus-visible::before{border-color:#99f6e4;background:#14b8a61a;box-shadow:0 0 0 2px #ffffffb8}
-.sales-station.active::before,.warehouse.active::before{border-color:#14b8a6;background:#14b8a62b;box-shadow:0 0 0 2px #fff,0 0 0 5px #0f766e88,0 0 16px #14b8a6aa}
+.sales-station.active::before,.warehouse.active::before{border-color:transparent;background:#14b8a62b;box-shadow:0 0 0 3px #0f766e,0 0 16px #14b8a6aa}
 .warehouse::before{inset:-10px}
 .shop-name{display:block;color:#fff;font:800 12px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.25px;text-shadow:0 1px 2px #000;white-space:nowrap;margin:0;padding:3px 6px;border:1px solid #ffffff80;border-radius:5px;background:#172033d9}
 .health-track{position:relative;display:block;width:100%;height:11px;border:2px solid #202a31;background:#262c32;box-shadow:0 0 0 1px #ffffffa8,0 3px 0 #19242a88;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px)}
