@@ -8,9 +8,13 @@
 .shop.a1,.shop.c2{--roof-y:71.41%}
 .shop.bs{--roof-y:35.07%}
 .venue .shop{top:calc(var(--roof-y) - var(--roof-gap));transform:translate(-50%,-100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 2px}
-.shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center;overflow:visible}
+.shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center;overflow:visible;cursor:pointer;touch-action:manipulation}
 .shop.warehouse{background:transparent;border:0}
+.venue .shop.warehouse{width:16%;min-height:clamp(76px,9vw,132px)}
 .shop:hover,.shop.active{box-shadow:none;border:0}
+.sales-station::before,.warehouse::before{content:"";position:absolute;z-index:-1;inset:-10px;border:3px solid transparent;border-radius:14px;background:#facc1500;box-shadow:0 0 0 0 #facc1500;pointer-events:none;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}
+.sales-station:hover::before,.sales-station:focus-visible::before,.sales-station.active::before,.warehouse:hover::before,.warehouse:focus-visible::before,.warehouse.active::before{border-color:#facc15;background:#facc1526;box-shadow:0 0 0 2px #fff8,0 0 14px #facc15aa}
+.warehouse::before{inset:-28px -34px -16px}
 .shop-name{display:block;color:#fff7e8;font:800 13px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.35px;text-shadow:-1px -1px 0 #172033,1px -1px 0 #172033,-1px 1px 0 #172033,1px 1px 0 #172033,0 2px 3px #000;white-space:nowrap;margin-bottom:5px}
 .health-track{position:relative;display:block;height:13px;border:2px solid #202a31;background:#262c32;box-shadow:0 0 0 1px #fef3c7,0 3px 0 #19242a88;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px)}
 .health-track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 2px),#17203399 calc(10% - 2px),#17203399 10%);pointer-events:none}
