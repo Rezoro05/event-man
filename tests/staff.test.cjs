@@ -4,9 +4,9 @@ const vm=require('node:vm');
 const fs=require('node:fs');
 const Staff=require('../dist/staff-ledger.js');
 const Transfer=require('../dist/transfer-ledger.js');
-test('starter roster has five Hands and one Sales and Chef at each station',()=>{
- const s=Staff.initial();assert.equal(s.people.length,13);Staff.validate(s);
- for(const l of Staff.locations.slice(0,4))for(const role of ['sales','chef'])assert.equal(s.people.filter(p=>p.location===l&&p.role===role).length,1);
+test('starter roster has five Hands, two Sales and one Chef at each station',()=>{
+ const s=Staff.initial();assert.equal(s.people.length,17);Staff.validate(s);
+ for(const l of Staff.locations.slice(0,4)){assert.equal(s.people.filter(p=>p.location===l&&p.role==='sales').length,2);assert.equal(s.people.filter(p=>p.location===l&&p.role==='chef').length,1);}
  assert.equal(s.people.filter(p=>p.role==='hands').length,5);
 });
 test('moving a Chef updates both station counts without duplicating the person',()=>{
@@ -14,7 +14,7 @@ test('moving a Chef updates both station counts without duplicating the person',
  assert.equal(r.ok,true);assert.equal(r.moved,true);
  assert.equal(s.people.filter(p=>p.role==='chef'&&p.location==='Atrium 1').length,0);
  assert.equal(s.people.filter(p=>p.role==='chef'&&p.location==='Cherry 2').length,2);
- assert.equal(s.people.length,13);assert.equal(s.events[0].from,'Atrium 1');
+ assert.equal(s.people.length,17);assert.equal(s.events[0].from,'Atrium 1');
 });
 test('Sales can move to Backstock and names trim whitespace',()=>{
  const s=Staff.initial();assert.equal(Staff.update(s,'sales-1',{name:'  Jamie  ',location:'Backstock'},1000).ok,true);

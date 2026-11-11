@@ -22,7 +22,7 @@ function stationArtwork(location){
   const people=typeof StaffRoster!=='undefined'?(StaffRoster.get()?.people||[]):[];
   return '<img class="station-art" src="assets/sales-station.png" alt="" aria-hidden="true">'+['chef','sales'].map(role=>{
     const staff=people.filter(p=>p.location===location&&p.role===role);
-    return '<span class="station-crew crew-'+role+'" aria-hidden="true">'+staff.slice(0,4).map(p=>'<span class="staff-sprite sprite-'+role+'"></span>').join('')+(staff.length>4?'<span class="crew-extra">+'+(staff.length-4)+'</span>':'')+'</span>';
+    return '<span class="station-crew crew-'+role+'" aria-label="'+E(staff.map(p=>p.name).join(', ')||role)+'">'+staff.slice(0,2).map(p=>'<span class="team-person"><span class="staff-sprite sprite-'+role+'" aria-hidden="true"></span><small>'+E(p.name)+'</small></span>').join('')+(staff.length>2?'<span class="crew-extra">+'+(staff.length-2)+'</span>':'')+'</span>';
   }).join('');
 }
 function stationSaleEffects(location){const now=Date.now();return saleEffects.filter(effect=>effect.location===location).map(effect=>'<span class="sale-pop '+effect.kind+'" data-sale-effect="'+effect.id+'" style="animation-delay:-'+Math.min(1600,now-effect.createdAt)+'ms">'+E(effect.label)+'</span>').join('')}
@@ -43,7 +43,7 @@ function render(){
   const issues=[];
   S.forEach(l=>M.forEach(([i])=>{if(op(i,l)&&status(i,l)!=='ok')issues.push({i,l,s:status(i,l),n:st(i,l)})}));
   const revenue=dashboardRevenueOverride!==null ? dashboardRevenueOverride : toastSummary ? toastSummary.totals.revenue : M.reduce((a,[i,p])=>a+p*S.reduce((b,l)=>b+so(i,l),0),0);
-  const kpis=[['Sales revenue','$'+revenue.toFixed(0)],['Units sold',tot(so)],['Available · shops',tot(st)],['Backstock',tot(st,['Backstock'])],['Refill signals',issues.length],['Stockouts',issues.filter(x=>x.s==='out').length],['In transit',D.transfers.filter(TransferLedger.inTransit).reduce((n,t)=>n+t.qty,0)]];
+  const kpis=[['Available · shops',tot(st)],['Backstock',tot(st,['Backstock'])],['Sales revenue','$'+revenue.toFixed(0)],['Units sold',tot(so)]];
   $('#kpis').innerHTML=kpis.map(([label,value],i)=>'<div class="kpi '+((i===4||i===5)&&value?'alert':'')+'"><small>'+label+'</small><strong>'+value+'</strong></div>').join('');
   $('#notices').innerHTML=issues.length?issues.slice(0,3).map(x=>'<span class="notice '+x.s+'">'+E(x.i)+' · '+E(x.l)+' · '+healthText(x.s,x.n)+'</span>').join(''):'<span class="notice ok">✓ No refill signals</span>';
   const pins={'Atrium VIP':'av','Cherry 1':'c1','Atrium 1':'a1','Cherry 2':'c2',Backstock:'bs'};
@@ -55,6 +55,7 @@ function render(){
 
   }).join('');
   renderTransfers();
+  if(sel!=='Backstock')$('#venue').insertAdjacentHTML('beforeend','<button class="team-edit-map '+pins[sel]+'" type="button" data-team-edit="'+E(sel)+'" aria-label="Manage team at '+E(sel)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.8V20h3.2L18 9.2 14.8 6 4 16.8zm12-9.7 1.2-1.2a1.6 1.6 0 0 1 2.3 0l.5.5a1.6 1.6 0 0 1 0 2.3L18.8 10 16 7.1z"/></svg></button>');
   document.querySelectorAll('.shop').forEach(button=>{
     button.onclick=event=>selectShop(button,event);
     button.onkeydown=event=>{if(event.key==='Escape'){button.classList.add('tooltip-dismissed');button.classList.remove('show-tooltip');}};
@@ -62,6 +63,7 @@ function render(){
     button.onfocus=()=>button.classList.remove('tooltip-dismissed');
     button.onblur=()=>button.classList.remove('show-tooltip');
   });
+  document.querySelectorAll('[data-team-edit]').forEach(button=>button.onclick=event=>{event.stopPropagation();openTeamRoster(button.dataset.teamEdit)});
   detail();
   $('#watch').innerHTML=issues.sort((a,b)=>a.n-b.n).map(x=>'<tr><td>'+E(x.i)+'</td><td>'+E(x.l)+'</td><td class="num">'+x.n+'</td><td><span class="pill '+x.s+'">'+healthText(x.s,x.n)+'</span></td></tr>').join('')||'<tr><td colspan="4">All stock levels are healthy.</td></tr>';
   const max=Math.max(...S.map(l=>tot(st,[l])),1);
@@ -77,7 +79,6 @@ function detail(){
     return '<div class="line inventory-item '+q+'"><div class="row"><button class="product-preview-trigger" type="button" data-product-preview="'+E(i)+'" aria-label="View image of '+E(i)+'">'+productArt(i)+'<span>'+E(i)+'</span></button><span class="nums">'+n+'/'+o+' · '+so(i,sel)+' sold</span></div>'+(q!=='ok'?'<span class="stock-status">'+healthText(q,n)+(n<0?' · Reconcile this item count':'')+'</span>':'')+'<div class="bar '+q+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div></div>';
   }).join('')+'</div></article>').join('')+'</div>';
   document.querySelectorAll('[data-product-preview]').forEach(button=>button.onclick=()=>openProductPreview(button.dataset.productPreview));
-  if(typeof renderStationStaff==='function')renderStationStaff();
 }
 function fill(id,v){$(id).innerHTML=v.map(x=>'<option>'+E(x)+'</option>').join('')}
 
@@ -353,6 +354,31 @@ function renderSalesFeed(){
   if(!simulationLog.length){host.innerHTML='<p class="hint">Transactions will appear here as the event begins.</p>';return}
   host.innerHTML=simulationLog.map(entry=>'<article class="sale-event '+(entry.status==='VOIDED'?'void':entry.status==='COMPED'?'comp':'')+'"><div><strong>'+E(entry.location)+'</strong><small>'+E(entry.items||entry.status.toLowerCase())+' · '+new Date(entry.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})+'</small></div><strong>'+dollars(entry.revenue)+'</strong></article>').join('');
 }
+function renderActivityPanel(){
+  const host=$('#activity-content');if(!host)return;
+  const sales=simulationLog.length?simulationLog.map(entry=>'<article class="command-row"><div><strong>'+E(entry.location)+'</strong><small>'+E(entry.items||entry.status)+' · '+new Date(entry.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})+'</small></div><strong>'+dollars(entry.revenue)+'</strong></article>').join(''):'<p class="hint">Start the simulator to see live sales.</p>';
+  const delivered=D.transfers.filter(TransferLedger.delivered).slice().sort((a,b)=>(b.deliveredAt||b.at)-(a.deliveredAt||a.at)).slice(0,6);
+  const transfers=delivered.length?delivered.map(t=>'<article class="command-row"><div><strong>'+E(t.item)+'</strong><small>'+E(t.from)+' → '+E(t.to)+'</small></div><strong>Delivered</strong></article>').join(''):'<p class="hint">No delivered transfers yet.</p>';
+  host.innerHTML='<section><div class="eyebrow">Live activity</div><h3>Latest sales</h3>'+sales+'</section><section><div class="eyebrow">Delivered transfers</div><h3>Transfer history</h3>'+transfers+'</section>';
+}
+function renderNotificationPanel(){
+  const host=$('#notification-content');if(!host)return;
+  const issues=[];S.forEach(location=>M.forEach(([item])=>{const state=status(item,location);if(op(item,location)&&state!=='ok')issues.push({item,location,state,left:st(item,location)})}));
+  const transfers=D.transfers.filter(TransferLedger.pending);
+  const alerts=issues.length?issues.slice(0,8).map(x=>'<article class="command-row '+x.state+'"><div><strong>'+E(x.item)+'</strong><small>'+E(x.location)+' · '+healthText(x.state,x.left)+'</small></div><strong>'+x.left+' left</strong></article>').join(''):'<p class="hint">No refill or stockout alerts.</p>';
+  const moving=transfers.length?transfers.map(t=>'<article class="command-row"><div><strong>'+E(t.item)+'</strong><small>'+E(t.from)+' → '+E(t.to)+'</small></div><strong>'+E(t.status==='in_transit'?'In transit':'Waiting')+'</strong></article>').join(''):'<p class="hint">No stock is in transit.</p>';
+  host.innerHTML='<section><div class="eyebrow">Suggested transfers</div><h3>Next best moves</h3><div class="command-suggestions">'+($('#suggestion-list')?.innerHTML||'<p class="hint">Start the simulation for suggestions.</p>')+'</div></section><section><div class="eyebrow">Refill & stockout signals</div><h3>Attention needed</h3>'+alerts+'</section><section><div class="eyebrow">In transit</div><h3>Transfers moving now</h3>'+moving+'</section>';
+}
+function setupCommandMenu(){
+  const top=document.querySelector('.top');if(!top||$('#command-menu'))return;
+  document.head.insertAdjacentHTML('beforeend','<style>.command-menu{display:flex;gap:8px;align-items:center;margin:12px 0 16px}.command-menu button{display:flex;align-items:center;gap:7px;border:1px solid #d8d0c5;border-radius:9px;background:#fff;padding:9px 11px;color:#334155;font:800 12px Inter,system-ui,sans-serif;cursor:pointer}.command-menu button:hover{border-color:#0f766e;color:#0f766e}.command-menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.mapcard>.head{display:none}.mapcard{padding:12px}.mapcard .venue{margin-top:0}.venue:after{display:none}.transfer-panel,.lower{display:none!important}.shop-tooltip{display:none!important}.command-dialog{width:min(650px,calc(100vw - 28px));max-height:80vh;border:0;border-radius:18px;padding:0;background:#fff;color:#172033;box-shadow:0 25px 80px #17203355}.command-dialog::backdrop{background:#17203399}.command-dialog-inner{padding:20px;overflow:auto;max-height:80vh}.command-dialog-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.command-dialog h2{margin:4px 0 14px}.command-dialog h3{font-size:15px;margin:3px 0 8px}.command-dialog section+section{margin-top:18px;padding-top:15px;border-top:1px solid #e5e7eb}.command-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid #edf0f2;font-size:13px}.command-row small{display:block;color:#64748b;margin-top:2px}.command-row.critical,.command-row.out{border-left:3px solid #dc2626;padding-left:8px}.command-suggestions .suggestion-list{display:block}.command-suggestions .suggestion{margin:7px 0}.command-close{width:40px;height:40px;border:1px solid #d8d0c5;border-radius:9px;background:#fff;font-size:25px;line-height:1;cursor:pointer}@media(max-width:600px){.command-menu{overflow:auto;padding-bottom:2px}.command-menu button{white-space:nowrap}}</style>');
+  top.insertAdjacentHTML('afterend','<nav id="command-menu" class="command-menu" aria-label="Dashboard sections"><button type="button" id="menu-activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>Activity</button><button type="button" id="menu-notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>Notifications</button><button type="button" id="menu-simulator"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5z"/></svg>Simulator</button></nav><dialog id="activity-dialog" class="command-dialog" aria-labelledby="activity-title"><div class="command-dialog-inner"><div class="command-dialog-top"><div><div class="eyebrow">Activity</div><h2 id="activity-title">Event activity</h2></div><button class="command-close" type="button" data-command-close="activity-dialog" aria-label="Close activity">×</button></div><div id="activity-content"></div></div></dialog><dialog id="notification-dialog" class="command-dialog" aria-labelledby="notification-title"><div class="command-dialog-inner"><div class="command-dialog-top"><div><div class="eyebrow">Notifications</div><h2 id="notification-title">Operations notifications</h2></div><button class="command-close" type="button" data-command-close="notification-dialog" aria-label="Close notifications">×</button></div><div id="notification-content"></div></div></dialog>');
+  const simulator=document.querySelector('.simulator');if(simulator)simulator.hidden=true;
+  $('#menu-activity').onclick=()=>{renderActivityPanel();$('#activity-dialog').showModal()};
+  $('#menu-notifications').onclick=()=>{renderNotificationPanel();$('#notification-dialog').showModal()};
+  $('#menu-simulator').onclick=()=>{simulator.hidden=false;simulator.scrollIntoView({behavior:'smooth',block:'start'});$('#sim-start').focus()};
+  document.querySelectorAll('[data-command-close]').forEach(button=>button.onclick=()=>$('#'+button.dataset.commandClose).close());
+}
 function setupProductPreview(){
   if(!document.head||!document.body)return;
   document.head.insertAdjacentHTML('beforeend','<style>.product-preview-trigger{display:flex;align-items:center;gap:7px;min-width:0;border:0;background:transparent;padding:0;color:inherit;font:inherit;font-weight:700;text-align:left;cursor:zoom-in}.product-preview-trigger>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.product-sprite{display:inline-block;flex:0 0 30px;width:30px;height:30px;border-radius:7px;background-image:url("assets/real-menu-sprites.png");background-size:500% 400%;background-position:calc(var(--sprite-col) * 25%) calc(var(--sprite-row) * 33.333%);image-rendering:auto;border:1px solid #d8d0c5}.product-dialog{max-width:min(560px,calc(100vw - 28px));padding:0;border:0;border-radius:18px;color:#172033;background:#fff;box-shadow:0 25px 80px #17203355}.product-dialog::backdrop{background:#17203399}.product-preview-card{padding:20px}.product-preview-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.product-preview-top h2{margin:4px 0}.product-preview-close{width:42px;height:42px;border:1px solid #d8d0c5;border-radius:9px;background:#fff;font-size:26px;line-height:1;cursor:pointer}.product-preview-art{display:grid;place-items:center;min-height:300px;margin:16px 0;border-radius:14px;background:linear-gradient(135deg,#fff8f1,#ecfdf5);border:1px solid #d8eee8}.product-sprite-large{width:min(320px,70vw);height:min(320px,70vw);border:0;border-radius:14px;background-size:500% 400%;box-shadow:0 10px 24px #1720331a}.sale-pop{position:absolute;z-index:8;left:50%;top:13%;transform:translateX(-50%);pointer-events:none;padding:5px 8px;border-radius:8px;background:#fff;color:#047857;border:2px solid #99f6e4;font:900 15px ui-monospace,monospace;box-shadow:0 5px 14px #17203333;animation:sale-float 1.4s ease-out forwards}.sale-pop.comp{color:#9a3412;border-color:#fdba74}.sale-pop.void{color:#b91c1c;border-color:#fecaca}@keyframes sale-float{0%{opacity:0;transform:translate(-50%,8px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}@media(prefers-reduced-motion:reduce){.sale-pop{animation:none}}@media(max-width:600px){.product-preview-art{min-height:240px}}</style>');
@@ -386,4 +412,4 @@ async function loadToastMock(){
     console.warn('Toast mock feed was not loaded.',error);
   }
 }
-if(document.head&&$('#kpis')&&typeof fetch==='function'){setupProductPreview();setupSimulatorUi();loadToastMock();}
+if(document.head&&$('#kpis')&&typeof fetch==='function'){setupProductPreview();setupSimulatorUi();setupCommandMenu();loadToastMock();}

@@ -7,6 +7,7 @@
       ...Array.from({length:5},(_,i)=>({id:'mover-'+(i+1),name:'Hand '+(i+1),role:'hands',location:null})),
       ...locations.slice(0,4).flatMap((location,i)=>[
         {id:'sales-'+(i+1),name:'Sales '+(i+1),role:'sales',location},
+        {id:'sales-'+(i+1)+'b',name:'Sales '+(i+1)+'B',role:'sales',location},
         {id:'chef-'+(i+1),name:'Chef '+(i+1),role:'chef',location}
       ])],events:[]};
   }
@@ -34,7 +35,14 @@
     if(before.name!==name||before.location!==location)state.events.push({personId:id,at,from:before.location,to:location,oldName:before.name,name});
     return {ok:true,person,before,moved:before.location!==location};
   }
-  const api={initial,validate,update,locations,roles};
+  function remove(state,id,at){
+    const index=state.people.findIndex(p=>p.id===id),person=state.people[index];
+    if(!person)return {ok:false,error:'This person is no longer in the roster.'};
+    if(person.role==='hands')return {ok:false,error:'Hands remain available for the transfer workflow and cannot be removed here.'};
+    state.people.splice(index,1);state.events.push({personId:id,at,deleted:true,name:person.name,from:person.location,to:null});
+    return {ok:true,person};
+  }
+  const api={initial,validate,update,remove,locations,roles};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   else {
     root.StaffLedger=api;
@@ -55,6 +63,11 @@
         };
         try{return await (navigator.locks?navigator.locks.request(key,run):run());}
         catch(e){return {ok:false,error:'Staff changes could not be saved. Nothing was changed. Please check browser storage and try again.'};}
+      }
+      ,async remove(id){
+        const run=()=>{const fresh=read();const result=remove(fresh,id,Date.now());if(result.ok){localStorage.setItem(key,JSON.stringify(fresh));cache=fresh;error=null;}return result;};
+        try{return await (navigator.locks?navigator.locks.request(key,run):run());}
+        catch(e){return {ok:false,error:'This team change could not be saved. Nothing was changed. Please check browser storage and try again.'};}
       }
     };
   }
