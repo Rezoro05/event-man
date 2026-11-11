@@ -55,7 +55,6 @@ function render(){
 
   }).join('');
   renderTransfers();
-  $('#venue').insertAdjacentHTML('beforeend',L.map(location=>'<button class="team-edit-map '+pins[location]+'" type="button" data-team-edit="'+E(location)+'" aria-label="Manage '+E(location==='Backstock'?'Central warehouse':location)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>').join(''));
   document.querySelectorAll('.shop').forEach(button=>{
     button.onclick=event=>selectShop(button,event);
     button.onkeydown=event=>{if(event.key==='Escape'){button.classList.add('tooltip-dismissed');button.classList.remove('show-tooltip');}};
@@ -63,7 +62,6 @@ function render(){
     button.onfocus=()=>button.classList.remove('tooltip-dismissed');
     button.onblur=()=>button.classList.remove('show-tooltip');
   });
-  document.querySelectorAll('[data-team-edit]').forEach(button=>button.onclick=event=>{event.stopPropagation();openTeamRoster(button.dataset.teamEdit)});
   detail();
   $('#watch').innerHTML=issues.sort((a,b)=>a.n-b.n).map(x=>'<tr><td>'+E(x.i)+'</td><td>'+E(x.l)+'</td><td class="num">'+x.n+'</td><td><span class="pill '+x.s+'">'+healthText(x.s,x.n)+'</span></td></tr>').join('')||'<tr><td colspan="4">All stock levels are healthy.</td></tr>';
   const max=Math.max(...S.map(l=>tot(st,[l])),1);
@@ -104,10 +102,10 @@ function showMoverMenu(id,restore=false) {
   const task=D.transfers.find(t=>TransferLedger.pending(t)&&t.moverId===id);
   const panel=$('#mover-menu');
   panel.hidden=false;
-  panel.innerHTML='<button class="menu-close" type="button" aria-label="Close mover menu">×</button><div class="mover-menu-avatar">'+trolleySprite(mover.color)+'</div><h3 class="mover-menu-name"><span aria-hidden="true"></span><span class="mover-menu-name-text">'+E(mover.name)+'</span><button type="button" class="mover-edit" aria-label="Edit name for '+E(mover.name)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button></h3><p>'+(task?'Delivering '+task.qty+' × '+E(task.item)+' to '+E(task.to):'Available · Trolley ready')+'</p><button class="action mover-transfer" type="button" '+(task?'disabled':'')+'>Transfer</button>'+(task?'<button class="reset mover-receipt" type="button">Confirm delivery</button>':'');
+  panel.innerHTML='<button class="menu-close" type="button" aria-label="Close mover menu">×</button><div class="mover-menu-avatar">'+trolleySprite(mover.color)+'</div><h3 class="mover-menu-name">'+E(mover.name)+'</h3><p>'+(task?'Delivering '+task.qty+' × '+E(task.item)+' to '+E(task.to):'Available · Trolley ready')+'</p><button class="action mover-transfer" type="button" '+(task?'disabled':'')+'>Transfer</button>'+(task?'<button class="reset mover-receipt" type="button">Confirm delivery</button>':'')+'<button type="button" class="reset mover-rename">Edit name</button>';
   panel.querySelector('.menu-close').onclick=()=>{selectedMoverId=null;panel.hidden=true};
   panel.querySelector('.mover-transfer').onclick=()=>openTransfer(id);
-  panel.querySelector('.mover-edit').onclick=()=>{selectedMoverId=null;panel.hidden=true;if(typeof openStaffEditor==='function')openStaffEditor(id);};
+  panel.querySelector('.mover-rename').onclick=()=>{selectedMoverId=null;panel.hidden=true;if(typeof openStaffEditor==='function')openStaffEditor(id);};
   if(task) panel.querySelector('.mover-receipt').onclick=()=>openDelivery(task.id);
   if(!restore)panel.querySelector(task?'.mover-receipt':'.mover-transfer').focus();
 }
@@ -317,7 +315,7 @@ function processOrder(order){
   setTimeout(()=>{saleEffects=saleEffects.filter(x=>x.id!==effect.id);document.querySelector('[data-sale-effect="'+effect.id+'"]')?.remove()},1600);
 }
 function money2(n){return Math.round(n*100)/100}
-function mapInteractionActive(){return Boolean(document.querySelector('.shop:hover,.team-edit-map:hover,.mover:hover,#mover-menu:hover'))}
+function mapInteractionActive(){return Boolean(document.querySelector('.shop:hover,.mover:hover,#mover-menu:hover'))}
 function runSimulationFrame(){
   if(!simulationClock||simulationIndex>=toastEvents.length){pauseSimulation();return}
   simulationClock+=simulationSpeed*15000;
