@@ -212,6 +212,7 @@ async function dispatchTransfer(event) {
 function openDelivery(id) {
   const transfer=D.transfers.find(t=>t.id===id&&TransferLedger.pending(t));
   if(!transfer || !TransferLedger.inTransit(transfer)) return;
+  selectedMoverId=null;
   $('#mover-menu').hidden=true;
   deliveryId=id;
   $('#delivery-summary').innerHTML='<div class="delivery-quantity">'+transfer.qty+' units</div><p><strong>'+E(transfer.item)+'</strong></p><p>'+E(transfer.from)+' → <strong>'+E(transfer.to)+'</strong></p><p class="hint">Confirm only after all products have been received. This adds '+transfer.qty+' units to '+E(transfer.to)+'.</p>';
@@ -315,7 +316,7 @@ function processOrder(order){
   setTimeout(()=>{saleEffects=saleEffects.filter(x=>x.id!==effect.id);document.querySelector('[data-sale-effect="'+effect.id+'"]')?.remove()},1600);
 }
 function money2(n){return Math.round(n*100)/100}
-function mapInteractionActive(){return Boolean(document.querySelector('.shop:hover,.mover:hover,#mover-menu:hover'))}
+function mapInteractionActive(){return selectedMoverId!==null||Boolean(document.querySelector('.shop:hover,.mover:hover,#mover-menu:hover'))}
 function runSimulationFrame(){
   if(!simulationClock||simulationIndex>=toastEvents.length){pauseSimulation();return}
   simulationClock+=simulationSpeed*15000;
