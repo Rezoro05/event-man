@@ -59,60 +59,137 @@
   ],
   "products": [
     {
-      "id": "ITEM-CHARD",
-      "name": "Chardonnay",
-      "category": "Wine",
-      "price": 85.3,
-      "stock": 40
-    },
-    {
-      "id": "ITEM-CAB",
-      "name": "Cabernet Sauvignon",
-      "category": "Wine",
-      "price": 97.49,
-      "stock": 42
-    },
-    {
-      "id": "ITEM-ROSE",
-      "name": "Rosé",
-      "category": "Wine",
-      "price": 79.21,
-      "stock": 36
-    },
-    {
-      "id": "ITEM-PINOT",
-      "name": "Pinot Noir",
-      "category": "Wine",
-      "price": 91.4,
-      "stock": 36
-    },
-    {
-      "id": "ITEM-BEER",
-      "name": "Craft Lager",
-      "category": "Beer",
-      "price": 54.84,
+      "id": "ITEM-SCHNITZEL",
+      "name": "Chicken Schnitzel Sandwich",
+      "category": "Mains & snacks",
+      "price": 13,
       "stock": 30
+    },
+    {
+      "id": "ITEM-BRAT",
+      "name": "Braised Bratwurst",
+      "category": "Mains & snacks",
+      "price": 10.5,
+      "stock": 20
+    },
+    {
+      "id": "ITEM-HOTDOG",
+      "name": "Hot Dog",
+      "category": "Mains & snacks",
+      "price": 8.5,
+      "stock": 25
+    },
+    {
+      "id": "ITEM-PRETZEL",
+      "name": "Warm Salted Pretzel VGO",
+      "category": "Mains & snacks",
+      "price": 8.5,
+      "stock": 25
+    },
+    {
+      "id": "ITEM-SALAD",
+      "name": "Harvest Salad VG, AG",
+      "category": "Mains & snacks",
+      "price": 16,
+      "stock": 10
+    },
+    {
+      "id": "ITEM-PUMPKIN",
+      "name": "Sweet Pumpkin Loaf VG, AG",
+      "category": "Mains & snacks",
+      "price": 7.5,
+      "stock": 15
+    },
+    {
+      "id": "ITEM-CHIPS",
+      "name": "Hal’s Chips & Popcorn VG, AG",
+      "category": "Mains & snacks",
+      "price": 3.5,
+      "stock": 15
+    },
+    {
+      "id": "ITEM-SNACKS",
+      "name": "Assorted Snacks",
+      "category": "Mains & snacks",
+      "price": 4.5,
+      "stock": 15
+    },
+    {
+      "id": "ITEM-TALEA-PILSNER",
+      "name": "Talea Al Dente Pilsner 12 oz",
+      "category": "Beer & cider",
+      "price": 9.5,
+      "stock": 20
+    },
+    {
+      "id": "ITEM-TALEA-PUMPKIN",
+      "name": "Talea Basically Pumpkin Ale 16 oz",
+      "category": "Beer & cider",
+      "price": 11,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-GRIMM",
+      "name": "Grimm Ales Weisse Hefeweissbier 16 oz",
+      "category": "Beer & cider",
+      "price": 11,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-KCBC",
+      "name": "KCBC Zøktoberfest 16 oz",
+      "category": "Beer & cider",
+      "price": 11,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-HUDSON-APPLE",
+      "name": "Hudson North Big Apple Dry Cider 12 oz",
+      "category": "Beer & cider",
+      "price": 9.5,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-HUDSON-PIE",
+      "name": "Hudson North Apple Pie Cider 16 oz",
+      "category": "Beer & cider",
+      "price": 11,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-LIQUID-FABLES",
+      "name": "Liquid Fables Strawberry Mule",
+      "category": "Beer & cider",
+      "price": 16.5,
+      "stock": 15
     },
     {
       "id": "ITEM-WATER",
-      "name": "Sparkling Water",
-      "category": "Non-Alcoholic",
-      "price": 30.47,
-      "stock": 40
-    },
-    {
-      "id": "ITEM-CHARCUTERIE",
-      "name": "Charcuterie Cup",
-      "category": "Food",
-      "price": 73.12,
+      "name": "Rain Brand Water 16 oz",
+      "category": "Refreshments",
+      "price": 4.5,
       "stock": 30
     },
     {
-      "id": "ITEM-FLIGHT",
-      "name": "VIP Wine Flight",
-      "category": "Wine Flight",
-      "price": 194.98,
-      "stock": 95,
+      "id": "ITEM-SELTZER",
+      "name": "Hal’s Seltzer 12 oz",
+      "category": "Refreshments",
+      "price": 4.25,
+      "stock": 20
+    },
+    {
+      "id": "ITEM-RED-JACKET",
+      "name": "Red Jacket Cider 12 oz",
+      "category": "Refreshments",
+      "price": 6,
+      "stock": 18
+    },
+    {
+      "id": "ITEM-VIP-BEER-FLIGHT",
+      "name": "VIP Beer Flight",
+      "category": "VIP flight",
+      "price": 32,
+      "stock": 45,
       "vipOnly": true
     }
   ],
@@ -156,39 +233,94 @@
       "locationName": "Atrium 1",
       "items": [
         {
-          "itemId": "ITEM-CHARD",
-          "name": "Chardonnay",
-          "startingQuantity": 40
-        },
-        {
-          "itemId": "ITEM-CAB",
-          "name": "Cabernet Sauvignon",
-          "startingQuantity": 42
-        },
-        {
-          "itemId": "ITEM-ROSE",
-          "name": "Rosé",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-PINOT",
-          "name": "Pinot Noir",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-BEER",
-          "name": "Craft Lager",
+          "itemId": "ITEM-SCHNITZEL",
+          "name": "Chicken Schnitzel Sandwich",
           "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-BRAT",
+          "name": "Braised Bratwurst",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-HOTDOG",
+          "name": "Hot Dog",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-PRETZEL",
+          "name": "Warm Salted Pretzel VGO",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-SALAD",
+          "name": "Harvest Salad VG, AG",
+          "startingQuantity": 10
+        },
+        {
+          "itemId": "ITEM-PUMPKIN",
+          "name": "Sweet Pumpkin Loaf VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-CHIPS",
+          "name": "Hal’s Chips & Popcorn VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-SNACKS",
+          "name": "Assorted Snacks",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-TALEA-PILSNER",
+          "name": "Talea Al Dente Pilsner 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-TALEA-PUMPKIN",
+          "name": "Talea Basically Pumpkin Ale 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-GRIMM",
+          "name": "Grimm Ales Weisse Hefeweissbier 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-KCBC",
+          "name": "KCBC Zøktoberfest 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-APPLE",
+          "name": "Hudson North Big Apple Dry Cider 12 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-PIE",
+          "name": "Hudson North Apple Pie Cider 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-LIQUID-FABLES",
+          "name": "Liquid Fables Strawberry Mule",
+          "startingQuantity": 15
         },
         {
           "itemId": "ITEM-WATER",
-          "name": "Sparkling Water",
-          "startingQuantity": 40
+          "name": "Rain Brand Water 16 oz",
+          "startingQuantity": 30
         },
         {
-          "itemId": "ITEM-CHARCUTERIE",
-          "name": "Charcuterie Cup",
-          "startingQuantity": 30
+          "itemId": "ITEM-SELTZER",
+          "name": "Hal’s Seltzer 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-RED-JACKET",
+          "name": "Red Jacket Cider 12 oz",
+          "startingQuantity": 18
         }
       ]
     },
@@ -197,44 +329,99 @@
       "locationName": "Atrium VIP",
       "items": [
         {
-          "itemId": "ITEM-CHARD",
-          "name": "Chardonnay",
-          "startingQuantity": 40
-        },
-        {
-          "itemId": "ITEM-CAB",
-          "name": "Cabernet Sauvignon",
-          "startingQuantity": 42
-        },
-        {
-          "itemId": "ITEM-ROSE",
-          "name": "Rosé",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-PINOT",
-          "name": "Pinot Noir",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-BEER",
-          "name": "Craft Lager",
+          "itemId": "ITEM-SCHNITZEL",
+          "name": "Chicken Schnitzel Sandwich",
           "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-BRAT",
+          "name": "Braised Bratwurst",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-HOTDOG",
+          "name": "Hot Dog",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-PRETZEL",
+          "name": "Warm Salted Pretzel VGO",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-SALAD",
+          "name": "Harvest Salad VG, AG",
+          "startingQuantity": 10
+        },
+        {
+          "itemId": "ITEM-PUMPKIN",
+          "name": "Sweet Pumpkin Loaf VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-CHIPS",
+          "name": "Hal’s Chips & Popcorn VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-SNACKS",
+          "name": "Assorted Snacks",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-TALEA-PILSNER",
+          "name": "Talea Al Dente Pilsner 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-TALEA-PUMPKIN",
+          "name": "Talea Basically Pumpkin Ale 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-GRIMM",
+          "name": "Grimm Ales Weisse Hefeweissbier 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-KCBC",
+          "name": "KCBC Zøktoberfest 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-APPLE",
+          "name": "Hudson North Big Apple Dry Cider 12 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-PIE",
+          "name": "Hudson North Apple Pie Cider 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-LIQUID-FABLES",
+          "name": "Liquid Fables Strawberry Mule",
+          "startingQuantity": 15
         },
         {
           "itemId": "ITEM-WATER",
-          "name": "Sparkling Water",
-          "startingQuantity": 40
-        },
-        {
-          "itemId": "ITEM-CHARCUTERIE",
-          "name": "Charcuterie Cup",
+          "name": "Rain Brand Water 16 oz",
           "startingQuantity": 30
         },
         {
-          "itemId": "ITEM-FLIGHT",
-          "name": "VIP Wine Flight",
-          "startingQuantity": 95
+          "itemId": "ITEM-SELTZER",
+          "name": "Hal’s Seltzer 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-RED-JACKET",
+          "name": "Red Jacket Cider 12 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-VIP-BEER-FLIGHT",
+          "name": "VIP Beer Flight",
+          "startingQuantity": 45
         }
       ]
     },
@@ -243,39 +430,94 @@
       "locationName": "Cherry 1",
       "items": [
         {
-          "itemId": "ITEM-CHARD",
-          "name": "Chardonnay",
-          "startingQuantity": 40
-        },
-        {
-          "itemId": "ITEM-CAB",
-          "name": "Cabernet Sauvignon",
-          "startingQuantity": 42
-        },
-        {
-          "itemId": "ITEM-ROSE",
-          "name": "Rosé",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-PINOT",
-          "name": "Pinot Noir",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-BEER",
-          "name": "Craft Lager",
+          "itemId": "ITEM-SCHNITZEL",
+          "name": "Chicken Schnitzel Sandwich",
           "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-BRAT",
+          "name": "Braised Bratwurst",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-HOTDOG",
+          "name": "Hot Dog",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-PRETZEL",
+          "name": "Warm Salted Pretzel VGO",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-SALAD",
+          "name": "Harvest Salad VG, AG",
+          "startingQuantity": 10
+        },
+        {
+          "itemId": "ITEM-PUMPKIN",
+          "name": "Sweet Pumpkin Loaf VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-CHIPS",
+          "name": "Hal’s Chips & Popcorn VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-SNACKS",
+          "name": "Assorted Snacks",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-TALEA-PILSNER",
+          "name": "Talea Al Dente Pilsner 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-TALEA-PUMPKIN",
+          "name": "Talea Basically Pumpkin Ale 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-GRIMM",
+          "name": "Grimm Ales Weisse Hefeweissbier 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-KCBC",
+          "name": "KCBC Zøktoberfest 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-APPLE",
+          "name": "Hudson North Big Apple Dry Cider 12 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-PIE",
+          "name": "Hudson North Apple Pie Cider 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-LIQUID-FABLES",
+          "name": "Liquid Fables Strawberry Mule",
+          "startingQuantity": 15
         },
         {
           "itemId": "ITEM-WATER",
-          "name": "Sparkling Water",
-          "startingQuantity": 40
+          "name": "Rain Brand Water 16 oz",
+          "startingQuantity": 30
         },
         {
-          "itemId": "ITEM-CHARCUTERIE",
-          "name": "Charcuterie Cup",
-          "startingQuantity": 30
+          "itemId": "ITEM-SELTZER",
+          "name": "Hal’s Seltzer 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-RED-JACKET",
+          "name": "Red Jacket Cider 12 oz",
+          "startingQuantity": 18
         }
       ]
     },
@@ -284,39 +526,94 @@
       "locationName": "Cherry 2",
       "items": [
         {
-          "itemId": "ITEM-CHARD",
-          "name": "Chardonnay",
-          "startingQuantity": 40
-        },
-        {
-          "itemId": "ITEM-CAB",
-          "name": "Cabernet Sauvignon",
-          "startingQuantity": 42
-        },
-        {
-          "itemId": "ITEM-ROSE",
-          "name": "Rosé",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-PINOT",
-          "name": "Pinot Noir",
-          "startingQuantity": 36
-        },
-        {
-          "itemId": "ITEM-BEER",
-          "name": "Craft Lager",
+          "itemId": "ITEM-SCHNITZEL",
+          "name": "Chicken Schnitzel Sandwich",
           "startingQuantity": 30
+        },
+        {
+          "itemId": "ITEM-BRAT",
+          "name": "Braised Bratwurst",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-HOTDOG",
+          "name": "Hot Dog",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-PRETZEL",
+          "name": "Warm Salted Pretzel VGO",
+          "startingQuantity": 25
+        },
+        {
+          "itemId": "ITEM-SALAD",
+          "name": "Harvest Salad VG, AG",
+          "startingQuantity": 10
+        },
+        {
+          "itemId": "ITEM-PUMPKIN",
+          "name": "Sweet Pumpkin Loaf VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-CHIPS",
+          "name": "Hal’s Chips & Popcorn VG, AG",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-SNACKS",
+          "name": "Assorted Snacks",
+          "startingQuantity": 15
+        },
+        {
+          "itemId": "ITEM-TALEA-PILSNER",
+          "name": "Talea Al Dente Pilsner 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-TALEA-PUMPKIN",
+          "name": "Talea Basically Pumpkin Ale 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-GRIMM",
+          "name": "Grimm Ales Weisse Hefeweissbier 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-KCBC",
+          "name": "KCBC Zøktoberfest 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-APPLE",
+          "name": "Hudson North Big Apple Dry Cider 12 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-HUDSON-PIE",
+          "name": "Hudson North Apple Pie Cider 16 oz",
+          "startingQuantity": 18
+        },
+        {
+          "itemId": "ITEM-LIQUID-FABLES",
+          "name": "Liquid Fables Strawberry Mule",
+          "startingQuantity": 15
         },
         {
           "itemId": "ITEM-WATER",
-          "name": "Sparkling Water",
-          "startingQuantity": 40
+          "name": "Rain Brand Water 16 oz",
+          "startingQuantity": 30
         },
         {
-          "itemId": "ITEM-CHARCUTERIE",
-          "name": "Charcuterie Cup",
-          "startingQuantity": 30
+          "itemId": "ITEM-SELTZER",
+          "name": "Hal’s Seltzer 12 oz",
+          "startingQuantity": 20
+        },
+        {
+          "itemId": "ITEM-RED-JACKET",
+          "name": "Red Jacket Cider 12 oz",
+          "startingQuantity": 18
         }
       ]
     }
