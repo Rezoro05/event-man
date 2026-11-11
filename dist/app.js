@@ -2,7 +2,7 @@
 const L=['Atrium 1','Atrium VIP','Cherry 1','Cherry 2','Backstock'],S=L.slice(0,4),M=[['Chicken Schnitzel Sandwich',13,[30,15,25,25,35],'Mains & snacks'],['Braised Bratwurst',10.5,[20,10,20,20,20],'Mains & snacks'],['Hot Dog',8.5,[25,10,25,25,35],'Mains & snacks'],['Warm Salted Pretzel VGO',8.5,[25,10,20,20,35],'Mains & snacks'],['Harvest Salad VG, AG',16,[10,8,10,10,12],'Mains & snacks'],['Sweet Pumpkin Loaf VG, AG',7.5,[15,8,15,15,17],'Mains & snacks'],['Hal’s Chips & Popcorn VG, AG',3.5,[15,8,15,15,27],'Mains & snacks'],['Assorted Snacks',4.5,[15,8,15,15,27],'Mains & snacks'],['Talea Al Dente Pilsner 12 oz',9.5,[20,10,20,20,30],'Beer & cider'],['Talea Basically Pumpkin Ale 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Grimm Ales Weisse Hefeweissbier 16 oz',11,[18,10,18,18,26],'Beer & cider'],['KCBC Zøktoberfest 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Hudson North Big Apple Dry Cider 12 oz',9.5,[18,10,18,18,26],'Beer & cider'],['Hudson North Apple Pie Cider 16 oz',11,[18,10,18,18,26],'Beer & cider'],['Liquid Fables The Boy Who Cried Wolf Strawberry Mule',16.5,[15,8,15,15,22],'Beer & cider'],['Rain Brand Water 16 oz',4.5,[30,15,30,30,45],'Refreshments'],['Hal’s Seltzer 12 oz',4.25,[20,10,20,20,30],'Refreshments'],['Red Jacket Cider 12 oz',6,[18,10,18,18,26],'Refreshments'],['VIP Flight',0,[0,45,0,0,0],'VIP flight']],$=q=>document.querySelector(q),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])),key='rezis-inventory-v1';
 let D=readState(),sel='Atrium 1',toastSummary=null,dashboardRevenueOverride=null;
 let toastEvents=[],simulationIndex=0,simulationClock=null,simulationSpeed=1,simulationTimer=null,suggestionMode=true;
-let locationRevenue={},simulationLog=[];
+let locationRevenue={},simulationLog=[],saleEffects=[];
 const mi=i=>M.find(x=>x[0]===i),op=(i,l)=>mi(i)[2][L.indexOf(l)];
 const so=(i,l)=>D.sales.filter(x=>x.item===i&&x.location===l).reduce((a,x)=>a+x.qty,0);
 const st=(i,l)=>TransferLedger.stock(M,D,i,l);
@@ -10,6 +10,8 @@ const tot=(f,ls=S)=>M.reduce((a,[i])=>a+ls.reduce((b,l)=>b+f(i,l),0),0);
 const status=(i,l)=>TransferLedger.stockStatus(st(i,l),op(i,l));
 const healthText=(s,n)=>n<0?'COUNT MISMATCH':({out:'OUT OF STOCK',critical:'NEARLY OUT',low:'LOW STOCK',ok:'HEALTHY'}[s]);
 const dollars=value=>Number(value).toLocaleString('en-US',{style:'currency',currency:'USD'});
+const itemSpriteIndex={'Chardonnay':0,'Cabernet Sauvignon':1,'Rosé':2,'Pinot Noir':3,'Craft Lager':4,'Sparkling Water':5,'Charcuterie Cup':6,'VIP Wine Flight':7};
+function productArt(name,large=false){const index=itemSpriteIndex[name];if(index===undefined)return '';return '<span class="product-sprite '+(large?'product-sprite-large':'')+'" style="--sprite-col:'+(index%4)+';--sprite-row:'+Math.floor(index/4)+'" aria-hidden="true"></span>'}
 function shopStats(location){
   const report=toastSummary?.locations?.find(row=>row.locationName===location);
   const sold=tot(so,[location]);
@@ -23,6 +25,7 @@ function stationArtwork(location){
     return '<span class="station-crew crew-'+role+'" aria-hidden="true">'+staff.slice(0,4).map(p=>'<span class="staff-sprite sprite-'+role+'"></span>').join('')+(staff.length>4?'<span class="crew-extra">+'+(staff.length-4)+'</span>':'')+'</span>';
   }).join('');
 }
+function stationSaleEffects(location){return saleEffects.filter(effect=>effect.location===location).map(effect=>'<span class="sale-pop '+effect.kind+'" data-sale-effect="'+effect.id+'">'+E(effect.label)+'</span>').join('')}
 function selectShop(button,event){
   const location=button.dataset.l;
   const touch=event?.pointerType==='touch'||(typeof matchMedia==='function'&&matchMedia('(hover: none)').matches);
@@ -48,7 +51,7 @@ function render(){
     const n=tot(st,[l]),o=tot(op,[l]),alerts=issues.filter(x=>x.l===l);
     const severity=alerts.some(x=>x.s==='out'||x.s==='critical')?'out':alerts.length?'low':'ok';
     const stats=shopStats(l),percentage=Math.max(0,Math.min(100,n/Math.max(o,1)*100)),tooltipId='shop-stats-'+pins[l];
-    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'sales-station ')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' — view inventory" aria-describedby="'+tooltipId+'">'+(l==='Backstock'?'':stationArtwork(l))+'<span class="shop-hud"><span class="shop-name">'+E(l==='Backstock'?'Backstock':l)+'</span><span class="health-track '+severity+'" aria-hidden="true"><span class="health-fill" style="width:'+percentage+'%"></span></span>'+(alerts.length?'<span class="health-alert '+severity+'" aria-hidden="true">!</span>':'')+'</span><span class="shop-tooltip" id="'+tooltipId+'" role="tooltip"><span class="tooltip-title">'+E(l==='Backstock'?'Central warehouse':l)+'</span><span class="tooltip-row"><span>Stock available</span><strong>'+n+' units</strong></span><span class="tooltip-row"><span>Units sold</span><strong>'+stats.sold+'</strong></span><span class="tooltip-row sales-row"><span>'+(stats.estimated?'Est. sales':'Sales')+'</span><strong>'+dollars(stats.revenue)+'</strong></span><span class="tooltip-note">'+(alerts.length?alerts.length+' item'+(alerts.length===1?'':'s')+' need attention':Math.round(percentage)+'% of opening stock')+(stats.estimated?' · At menu prices':'')+'</span><span class="tooltip-instruction">Click to inspect items<span class="touch-instruction">Tap again to inspect items</span></span></span></button>';
+    return '<button class="shop '+pins[l]+' '+(l==='Backstock'?'warehouse ':'sales-station ')+(l===sel?'active':'')+'" data-l="'+l+'" aria-label="'+E(l==='Backstock'?'Central warehouse':l)+' — view inventory" aria-describedby="'+tooltipId+'">'+(l==='Backstock'?'':stationArtwork(l))+stationSaleEffects(l)+'<span class="shop-hud"><span class="shop-name">'+E(l==='Backstock'?'Backstock':l)+'</span><span class="health-track '+severity+'" aria-hidden="true"><span class="health-fill" style="width:'+percentage+'%"></span></span>'+(alerts.length?'<span class="health-alert '+severity+'" aria-hidden="true">!</span>':'')+'</span><span class="shop-tooltip" id="'+tooltipId+'" role="tooltip"><span class="tooltip-title">'+E(l==='Backstock'?'Central warehouse':l)+'</span><span class="tooltip-row"><span>Stock available</span><strong>'+n+' units</strong></span><span class="tooltip-row"><span>Units sold</span><strong>'+stats.sold+'</strong></span><span class="tooltip-row sales-row"><span>'+(stats.estimated?'Est. sales':'Sales')+'</span><strong>'+dollars(stats.revenue)+'</strong></span><span class="tooltip-note">'+(alerts.length?alerts.length+' item'+(alerts.length===1?'':'s')+' need attention':Math.round(percentage)+'% of opening stock')+(stats.estimated?' · At menu prices':'')+'</span><span class="tooltip-instruction">Click to inspect items<span class="touch-instruction">Tap again to inspect items</span></span></span></button>';
 
   }).join('');
   renderTransfers();
@@ -71,8 +74,9 @@ function detail(){
   const cats=[...new Set(M.filter(visible).map(x=>x[3]))];
   $('#detail').innerHTML='<div class="detailtop"><div><div class="eyebrow">Selected point</div><h2>'+E(sel==='Backstock'?'Central warehouse':sel)+'</h2><p class="hint">Available quantities compared with opening stock.</p></div></div><div class="stock-legend"><span class="legend-low">Yellow · Low stock</span><span class="legend-critical">Red · Nearly out / empty</span></div><span class="mini">'+tot(st,[sel])+' AVAILABLE</span><span class="mini">'+tot(so,[sel])+' SOLD</span><div class="cats">'+cats.map(c=>'<article class="cat"><div class="photo" style="background-image:url('+(c==='Food'?'assets/menu-food.png':'assets/menu-drinks.png')+')"></div><div class="ctitle">'+E(c)+'</div><div class="lines">'+M.filter(x=>x[3]===c&&visible(x)).map(([i])=>{
     const n=st(i,sel),o=op(i,sel),q=status(i,sel);
-    return '<div class="line inventory-item '+q+'"><div class="row"><span>'+E(i)+'</span><span class="nums">'+n+'/'+o+' · '+so(i,sel)+' sold</span></div>'+(q!=='ok'?'<span class="stock-status">'+healthText(q,n)+(n<0?' · Reconcile this item count':'')+'</span>':'')+'<div class="bar '+q+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div></div>';
+    return '<div class="line inventory-item '+q+'"><div class="row"><button class="product-preview-trigger" type="button" data-product-preview="'+E(i)+'" aria-label="View image of '+E(i)+'">'+productArt(i)+'<span>'+E(i)+'</span></button><span class="nums">'+n+'/'+o+' · '+so(i,sel)+' sold</span></div>'+(q!=='ok'?'<span class="stock-status">'+healthText(q,n)+(n<0?' · Reconcile this item count':'')+'</span>':'')+'<div class="bar '+q+'"><i style="width:'+Math.max(0,Math.min(100,n/Math.max(o,1)*100))+'%"></i></div></div>';
   }).join('')+'</div></article>').join('')+'</div>';
+  document.querySelectorAll('[data-product-preview]').forEach(button=>button.onclick=()=>openProductPreview(button.dataset.productPreview));
   if(typeof renderStationStaff==='function')renderStationStaff();
 }
 function fill(id,v){$(id).innerHTML=v.map(x=>'<option>'+E(x)+'</option>').join('')}
@@ -303,6 +307,10 @@ function processOrder(order){
   locationRevenue[order.restaurant.name]=money2((locationRevenue[order.restaurant.name]||0)+order.reziDashboard.recognizedRevenue);
   simulationLog.unshift({id:order.guid,location:order.restaurant.name,time:order.closedDate,revenue:order.reziDashboard.recognizedRevenue,status:order.reziDashboard.orderStatus,items:sales.map(s=>s.qty+' × '+s.item).join(', ')});
   simulationLog=simulationLog.slice(0,5);
+  const paid=order.reziDashboard.recognizedRevenue>0;
+  const effect={id:order.guid+'-'+Date.now(),location:order.restaurant.name,label:paid?'+'+dollars(order.reziDashboard.recognizedRevenue):order.reziDashboard.orderStatus==='COMPED'?'COMP':'VOID',kind:paid?'paid':order.reziDashboard.orderStatus==='COMPED'?'comp':'void'};
+  saleEffects.push(effect);
+  setTimeout(()=>{saleEffects=saleEffects.filter(x=>x.id!==effect.id);document.querySelector('[data-sale-effect="'+effect.id+'"]')?.remove()},1400);
 }
 function money2(n){return Math.round(n*100)/100}
 function runSimulationFrame(){
@@ -328,7 +336,7 @@ function stepSimulation(){
   if(simulationIndex>=toastEvents.length)notify('Event simulation complete. All 480 transactions have been processed.');
 }
 function pauseSimulation(){if(simulationTimer){clearInterval(simulationTimer);simulationTimer=null}updateSimulatorUi()}
-function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
+function resetSimulation(){pauseSimulation();simulationIndex=0;simulationClock=toastEvents.length?eventTime(toastEvents[0]):null;D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];saleEffects=[];localStorage.setItem(key,JSON.stringify(D));render();updateSimulatorUi();notify('Simulation reset to the start of service.');}
 function openSuggestion(item,from,to,qty){activeMover=null;$('#from').value=from;$('#to').value=to;$('#titem').value=item;$('#tqty').value=qty;updateAvailability();$('#transfer-dialog').showModal();}
 function renderSuggestions(){
   const host=$('#suggestion-list');if(!host)return;
@@ -345,6 +353,20 @@ function renderSalesFeed(){
   if(!simulationLog.length){host.innerHTML='<p class="hint">Transactions will appear here as the event begins.</p>';return}
   host.innerHTML=simulationLog.map(entry=>'<article class="sale-event '+(entry.status==='VOIDED'?'void':entry.status==='COMPED'?'comp':'')+'"><div><strong>'+E(entry.location)+'</strong><small>'+E(entry.items||entry.status.toLowerCase())+' · '+new Date(entry.time).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'})+'</small></div><strong>'+dollars(entry.revenue)+'</strong></article>').join('');
 }
+function setupProductPreview(){
+  if(!document.head||!document.body)return;
+  document.head.insertAdjacentHTML('beforeend','<style>.product-preview-trigger{display:flex;align-items:center;gap:7px;min-width:0;border:0;background:transparent;padding:0;color:inherit;font:inherit;font-weight:700;text-align:left;cursor:zoom-in}.product-preview-trigger>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.product-sprite{display:inline-block;flex:0 0 30px;width:30px;height:30px;border-radius:7px;background-image:url("assets/menu-item-sprites.png");background-size:400% 200%;background-position:calc(var(--sprite-col) * 33.333%) calc(var(--sprite-row) * 100%);image-rendering:auto;border:1px solid #d8d0c5}.product-dialog{max-width:min(560px,calc(100vw - 28px));padding:0;border:0;border-radius:18px;color:#172033;background:#fff;box-shadow:0 25px 80px #17203355}.product-dialog::backdrop{background:#17203399}.product-preview-card{padding:20px}.product-preview-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.product-preview-top h2{margin:4px 0}.product-preview-close{width:42px;height:42px;border:1px solid #d8d0c5;border-radius:9px;background:#fff;font-size:26px;line-height:1;cursor:pointer}.product-preview-art{display:grid;place-items:center;min-height:300px;margin:16px 0;border-radius:14px;background:linear-gradient(135deg,#fff8f1,#ecfdf5);border:1px solid #d8eee8}.product-sprite-large{width:min(320px,70vw);height:min(320px,70vw);border:0;border-radius:14px;background-size:400% 200%;box-shadow:0 10px 24px #1720331a}.sale-pop{position:absolute;z-index:8;left:50%;top:13%;transform:translateX(-50%);pointer-events:none;padding:5px 8px;border-radius:8px;background:#fff;color:#047857;border:2px solid #99f6e4;font:900 15px ui-monospace,monospace;box-shadow:0 5px 14px #17203333;animation:sale-float 1.4s ease-out forwards}.sale-pop.comp{color:#9a3412;border-color:#fdba74}.sale-pop.void{color:#b91c1c;border-color:#fecaca}@keyframes sale-float{0%{opacity:0;transform:translate(-50%,8px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}100%{opacity:0;transform:translate(-50%,-60px) scale(1)}}@media(prefers-reduced-motion:reduce){.sale-pop{animation:none}}@media(max-width:600px){.product-preview-art{min-height:240px}}</style>');
+  document.body.insertAdjacentHTML('beforeend','<dialog id="product-preview" class="product-dialog" aria-labelledby="product-preview-title"><section class="product-preview-card"><div class="product-preview-top"><div><div class="eyebrow">Menu item</div><h2 id="product-preview-title">Product preview</h2></div><button id="product-preview-close" class="product-preview-close" type="button" aria-label="Close product preview">×</button></div><div id="product-preview-art" class="product-preview-art" role="img"></div><p id="product-preview-description" class="hint">Pixel-art menu image used in the event simulation.</p></section></dialog>');
+  $('#product-preview-close').onclick=()=>$('#product-preview').close();
+}
+function openProductPreview(name){
+  const dialog=$('#product-preview');if(!dialog)return;
+  $('#product-preview-title').textContent=name;
+  $('#product-preview-art').innerHTML=productArt(name,true);
+  $('#product-preview-art').setAttribute('aria-label','Pixel-art image of '+name);
+  $('#product-preview-description').textContent='Pixel-art preview of '+name+'. Select a station to view its live inventory.';
+  dialog.showModal();
+}
 // This loader reads the normalized fields that a future Toast webhook adapter will write.
 async function loadToastMock(){
   try {
@@ -353,8 +375,9 @@ async function loadToastMock(){
     if(!configResponse.ok||!feedResponse.ok||!summaryResponse.ok)throw new Error('Mock data is unavailable.');
     const [config,feed,summary]=await Promise.all([configResponse.json(),feedResponse.json(),summaryResponse.json()]);
     const opening=Object.fromEntries(config.startingInventory.map(location=>[location.locationName,Object.fromEntries(location.items.map(item=>[item.itemId,item.startingQuantity]))]));
-    M.splice(0,M.length,...config.products.map(product=>[product.name,product.price,L.map(location=>opening[location]?.[product.id]||0),product.category]));
-    toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];
+    const backstock={"ITEM-CHARD":65,"ITEM-CAB":70,"ITEM-ROSE":55,"ITEM-PINOT":55,"ITEM-BEER":45,"ITEM-WATER":60,"ITEM-CHARCUTERIE":45,"ITEM-FLIGHT":50};
+    M.splice(0,M.length,...config.products.map(product=>[product.name,product.price,L.map(location=>location==='Backstock'?(backstock[product.id]||0):(opening[location]?.[product.id]||0)),product.category]));
+    toastEvents=feed.events.sort((a,b)=>eventTime(a)-eventTime(b));toastSummary=summary;simulationClock=eventTime(toastEvents[0]);D={sales:[],transfers:[]};dashboardRevenueOverride=0;locationRevenue={};simulationLog=[];saleEffects=[];
     localStorage.setItem(key,JSON.stringify(D));$('#titem').value=M[0][0];document.querySelector('.live').textContent='Toast · Simulator ready';render();updateSimulatorUi();
   }catch(error){
     document.querySelector('.live').textContent='Toast · Practice data unavailable';
@@ -362,4 +385,4 @@ async function loadToastMock(){
     console.warn('Toast mock feed was not loaded.',error);
   }
 }
-if(document.head&&$('#kpis')&&typeof fetch==='function'){setupSimulatorUi();loadToastMock();}
+if(document.head&&$('#kpis')&&typeof fetch==='function'){setupProductPreview();setupSimulatorUi();loadToastMock();}
