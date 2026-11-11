@@ -10,18 +10,19 @@
 .venue .shop{top:calc(var(--roof-y) - var(--roof-gap));transform:translate(-50%,-100%);display:flex;flex-direction:column;justify-content:flex-end;padding:0 2px}
 .shop{width:116px;min-height:44px;background:transparent;border:0;border-radius:0;box-shadow:none;text-align:center;overflow:visible;cursor:pointer;touch-action:manipulation}
 .shop.warehouse{background:transparent;border:0}
-.venue .shop.warehouse{width:16%;min-height:clamp(76px,9vw,132px)}
+.venue .shop.warehouse{top:58%;width:20%;min-height:22%;transform:translate(-50%,-100%)}
 .shop:hover,.shop.active{box-shadow:none;border:0}
-.sales-station::before,.warehouse::before{content:"";position:absolute;z-index:-1;inset:-10px;border:3px solid transparent;border-radius:14px;background:#facc1500;box-shadow:0 0 0 0 #facc1500;pointer-events:none;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}
-.sales-station:hover::before,.sales-station:focus-visible::before,.sales-station.active::before,.warehouse:hover::before,.warehouse:focus-visible::before,.warehouse.active::before{border-color:#facc15;background:#facc1526;box-shadow:0 0 0 2px #fff8,0 0 14px #facc15aa}
-.warehouse::before{inset:-28px -34px -16px}
-.shop-name{display:block;color:#fff7e8;font:800 13px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.35px;text-shadow:-1px -1px 0 #172033,1px -1px 0 #172033,-1px 1px 0 #172033,1px 1px 0 #172033,0 2px 3px #000;white-space:nowrap;margin-bottom:5px}
-.health-track{position:relative;display:block;height:13px;border:2px solid #202a31;background:#262c32;box-shadow:0 0 0 1px #fef3c7,0 3px 0 #19242a88;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px)}
+.sales-station::before,.warehouse::before{content:"";position:absolute;z-index:-1;inset:-10px;border:2px dashed transparent;border-radius:16px;background:#14b8a600;box-shadow:0 0 0 0 #14b8a600;pointer-events:none;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}
+.sales-station:hover::before,.sales-station:focus-visible::before,.warehouse:hover::before,.warehouse:focus-visible::before{border-color:#99f6e4;background:#14b8a61a;box-shadow:0 0 0 2px #ffffffb8}
+.sales-station.active::before,.warehouse.active::before{border-color:#14b8a6;background:#14b8a62b;box-shadow:0 0 0 2px #fff,0 0 0 5px #0f766e88,0 0 16px #14b8a6aa}
+.warehouse::before{inset:-10px}
+.shop-name{display:block;color:#fff;font:800 12px/1.2 ui-monospace,SFMono-Regular,monospace;letter-spacing:-.25px;text-shadow:0 1px 2px #000;white-space:nowrap;margin:0;padding:3px 6px;border:1px solid #ffffff80;border-radius:5px;background:#172033d9}
+.health-track{position:relative;display:block;width:100%;height:11px;border:2px solid #202a31;background:#262c32;box-shadow:0 0 0 1px #ffffffa8,0 3px 0 #19242a88;overflow:hidden;clip-path:polygon(3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px),0 3px)}
 .health-track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0,transparent calc(10% - 2px),#17203399 calc(10% - 2px),#17203399 10%);pointer-events:none}
 .health-fill{display:block;height:100%;background:linear-gradient(to bottom,#bcf86e 0 24%,#53bd43 24% 74%,#237a39 74%);transition:width .25s ease}
 .health-track.low .health-fill{background:linear-gradient(to bottom,#fff7a3 0 24%,#facc15 24% 74%,#a16207 74%)}
 .health-track.out .health-fill{background:linear-gradient(to bottom,#ffb3a7 0 24%,#ef4444 24% 74%,#991b1b 74%)}
-.shop.active .health-track{box-shadow:0 0 0 1px #fff,0 0 8px #fef3c780}
+.shop.active .health-track{box-shadow:0 0 0 1px #fff,0 0 8px #5eead4}
 .health-alert{position:absolute;right:-5px;bottom:4px;background:#dc2626;border:1px solid #fff4cf;color:white;width:16px;height:16px;font:900 11px/14px ui-monospace,monospace;border-radius:3px;text-align:center}
 .health-alert.low{background:#facc15;color:#713f12}
 .shop-tooltip{display:block;position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);width:210px;padding:12px;background:#14232bf5;border:1px solid #ffe2a4;border-radius:9px;box-shadow:0 10px 24px #0005;color:#fff;text-shadow:none;text-align:left;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s,transform .12s;white-space:normal;z-index:30}
