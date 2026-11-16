@@ -6,7 +6,7 @@
 .sales-station .station-art{display:block;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
 .sales-station .shop-hud{position:absolute;left:50%;bottom:calc(95% + 8px);transform:translateX(-50%);width:132px}
 .station-crew{position:absolute;display:flex;justify-content:center;pointer-events:none;z-index:2;gap:2px}
-.station-crew.crew-chef{left:27%;top:38%;width:22%}.station-crew.crew-sales{left:52%;top:37%;width:30%}
+.station-crew.crew-chef{left:25%;top:37%;width:20%}.station-crew.crew-sales{left:50%;top:37%;width:40%}
 .team-person{position:relative;display:block;width:50%;min-width:0}.station-crew.crew-chef .team-person{width:100%}
 .station-crew .staff-sprite{width:100%;height:auto;aspect-ratio:1;display:block;filter:drop-shadow(0 1px 0 #fff8)}
 .team-person small{display:block;max-width:42px;margin:-2px auto 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:3px;background:#172033e8;color:#fff;padding:1px 2px;font:700 5px/1 system-ui;text-align:center}
